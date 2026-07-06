@@ -2,11 +2,9 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createMdxLanguagePlugin } from '@mdx-js/language-service'
 import { runTsc } from '@volar/typescript/lib/quickstart/runTsc.js'
-import remarkFrontmatter from 'remark-frontmatter'
-import remarkGfm from 'remark-gfm'
 import { resolveMdxTsOptions } from './options.js'
+import { createMdxTsLanguagePlugin } from './plugin.js'
 
 /**
  * mdx-tsc — a drop-in `tsc` that additionally type-checks `.mdx` files.
@@ -15,11 +13,6 @@ import { resolveMdxTsOptions } from './options.js'
  * only thing mdx-ts adds is the MDX language plugin (via Volar's runTsc) and a
  * friendlier error when no project can be found.
  */
-
-const remarkSyntaxPlugins = [
-  [remarkFrontmatter, ['toml', 'yaml']],
-  remarkGfm,
-]
 
 function main(): void {
   const argv = process.argv.slice(2)
@@ -38,15 +31,7 @@ function main(): void {
     (_ts, programOptions) => {
       const options = resolveMdxTsOptions(programOptions)
       return {
-        languagePlugins: [
-          createMdxLanguagePlugin(
-            // @ts-expect-error -- PluggableList tuple typing is looser at runtime.
-            remarkSyntaxPlugins,
-            [],
-            options.checkMdx,
-            options.jsxImportSource,
-          ),
-        ],
+        languagePlugins: [createMdxTsLanguagePlugin(options)],
       }
     },
   )
