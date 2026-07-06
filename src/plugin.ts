@@ -1,10 +1,11 @@
 import { fileURLToPath } from 'node:url'
 import { createMdxLanguagePlugin } from '@mdx-js/language-service'
-import type { LanguagePlugin } from '@volar/language-core'
+import type { LanguagePlugin, VirtualCode } from '@volar/language-core'
 import remarkFrontmatter from 'remark-frontmatter'
 import remarkGfm from 'remark-gfm'
 import { createFrontmatterPlugin } from './frontmatter.js'
 import type { MdxTsOptions } from './options.js'
+import { injectParseErrorDiagnostic, type ParseError } from './parse-errors.js'
 
 /** The default remark *syntax* plugins enabled for parsing MDX. */
 const remarkSyntaxPlugins = [
@@ -42,12 +43,30 @@ export function createMdxTsLanguagePlugin(
     createVirtualCode(fileNameOrUri, languageId, snapshot, ctx) {
       currentFile = toPath(fileNameOrUri)
       try {
-        return originalCreateVirtualCode?.(fileNameOrUri, languageId, snapshot, ctx)
+        const code = originalCreateVirtualCode?.(fileNameOrUri, languageId, snapshot, ctx)
+        return code ? surfaceParseError(code, snapshot) : code
       } finally {
         currentFile = undefined
       }
     },
   }
+}
+
+/**
+ * When upstream failed to parse a document it exposes the thrown message on
+ * `code.error` and emits an empty fallback JS file (so nothing is checked).
+ * Replace that fallback's embedded JS with one that reports the parse error as
+ * a diagnostic, so broken MDX fails the check instead of passing silently.
+ */
+function surfaceParseError(code: VirtualCode, snapshot: unknown): VirtualCode {
+  const error = (code as { error?: ParseError }).error
+  const embedded = code.embeddedCodes?.[0]
+  if (!error || !embedded) return code
+
+  const snap = snapshot as { getText(start: number, end: number): string; getLength(): number }
+  const mdx = snap.getText(0, snap.getLength())
+  code.embeddedCodes![0] = injectParseErrorDiagnostic(embedded, mdx, error)
+  return code
 }
 
 /** Normalize the plugin's `string | URI` file argument to a filesystem path. */

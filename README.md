@@ -65,11 +65,11 @@ Point `include` at your `.mdx` files and turn on MDX checking:
     "checkJs": true,
     "strict": true,
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
   // Enable strict MDX type-checking (on by default in mdx-tsc; set false to relax).
   "mdx": { "checkMdx": true },
-  "include": ["**/*.mdx", "**/*.ts", "**/*.tsx"]
+  "include": ["**/*.mdx", "**/*.ts", "**/*.tsx"],
 }
 ```
 
@@ -83,9 +83,9 @@ matched by glob, in an `"mdx-ts"` section of your tsconfig:
   "mdx-ts": {
     "frontmatter": {
       "content/blog/**/*.mdx": "./src/content.ts#BlogFrontmatter",
-      "content/docs/**/*.mdx": "./src/content.ts#DocFrontmatter"
-    }
-  }
+      "content/docs/**/*.mdx": "./src/content.ts#DocFrontmatter",
+    },
+  },
 }
 ```
 
@@ -96,14 +96,14 @@ the static type, it never runs your schema:
 ```ts
 // src/content.ts
 export interface BlogFrontmatter {
-  title: string
-  date: string
-  tags: string[]
+  title: string;
+  date: string;
+  tags: string[];
 }
 
-import { z } from 'zod'
-export const docSchema = z.object({ title: z.string(), order: z.number() })
-export type DocFrontmatter = z.infer<typeof docSchema>
+import { z } from "zod";
+export const docSchema = z.object({ title: z.string(), order: z.number() });
+export type DocFrontmatter = z.infer<typeof docSchema>;
 ```
 
 Now usages of `frontmatter` in the document body are checked:
@@ -111,13 +111,13 @@ Now usages of `frontmatter` in the document body are checked:
 ```mdx
 ---
 title: Hello
-date: '2026-07-06'
+date: "2026-07-06"
 tags: [intro]
 ---
 
 # {frontmatter.title}
 
-Posted {frontmatter.publishedAt}.   {/* error: publishedAt is not on BlogFrontmatter */}
+Posted {frontmatter.publishedAt}. {/* error: publishedAt is not on BlogFrontmatter */}
 ```
 
 Files that match no glob keep an untyped (`any`) `frontmatter`, so this is
@@ -132,18 +132,18 @@ everywhere:
 
 ```ts
 // mdx-env.d.ts
-import type { Chart } from './components.js'
+import type { Chart } from "./components.js";
 
 declare global {
   interface MDXProvidedComponents {
-    Chart: typeof Chart
+    Chart: typeof Chart;
   }
 }
-export {}
+export {};
 ```
 
 ```mdx
-<Chart data={42} />   {/* error: number is not assignable to number[] */}
+<Chart data={42} /> {/* error: number is not assignable to number[] */}
 ```
 
 Make sure the `.d.ts` is covered by your tsconfig `include`.
@@ -164,15 +164,15 @@ Make sure the `.d.ts` is covered by your tsconfig `include`.
 - `{expression}` types
 - JSX component props (imported **and** provider-injected components)
 - Frontmatter, against a per-glob schema you declare
+- MDX **parse errors** — a document that can't be parsed is reported at the
+  offending location (with the reason), so broken MDX fails the check instead
+  of slipping through
 
 ## Limitations
 
 - **MDX must be valid JavaScript + JSDoc.** Like all MDX, the ESM in a document
   is JavaScript — TypeScript-only syntax such as `export const x: number = …`
   is not valid. Use JSDoc (`/** @type {number} */`) for annotations.
-- **Type errors, not parse errors.** `mdx-tsc` surfaces *type* problems. A
-  document that fails to parse as MDX is reported by your editor/build's MDX
-  loader, not here.
 - **Frontmatter is checked by usage.** In this release the declared schema types
   the `frontmatter` value (so body usages are checked); it does not yet validate
   the literal YAML values against the schema.
