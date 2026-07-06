@@ -14,6 +14,27 @@ export type VirtualCodePlugin = () => VirtualCodePluginObject
 
 const EXTENSION = /\.(mts|cts|ts|tsx|mjs|cjs|js|jsx)$/
 
+/** A function that returns the frontmatter schema entry matching a file, if any. */
+export type FrontmatterMatcher = (file: string | undefined) => FrontmatterSchemaEntry | undefined
+
+/** Compile the glob matchers once and reuse them across files in a program. */
+export function createFrontmatterMatcher(
+  entries: FrontmatterSchemaEntry[],
+): FrontmatterMatcher {
+  const matchers = entries.map((entry) => ({
+    entry,
+    isMatch: picomatch(toPosix(entry.absoluteGlob), { dot: true }),
+  }))
+  return (file) => {
+    if (!file) return undefined
+    const posix = toPosix(file)
+    for (const { entry, isMatch } of matchers) {
+      if (isMatch(posix)) return entry
+    }
+    return undefined
+  }
+}
+
 /**
  * A VirtualCodePlugin that types the document's `frontmatter` export.
  *
@@ -22,21 +43,17 @@ const EXTENSION = /\.(mts|cts|ts|tsx|mjs|cjs|js|jsx)$/
  * `{frontmatter.title}` usages in the body are checked against it. The current
  * file is read from `getFile()` — safe because upstream instantiates and runs
  * plugins synchronously inside `createVirtualCode`, which our language-plugin
- * wrapper wraps to set that value first.
+ * wrapper wraps to set that value first. (Checking of the frontmatter *values*
+ * is layered on separately in the wrapper, since the plugin seam carries no
+ * source mappings.)
  */
 export function createFrontmatterPlugin(
   getFile: () => string | undefined,
-  entries: FrontmatterSchemaEntry[],
+  match: FrontmatterMatcher,
   exportName = 'frontmatter',
 ): VirtualCodePlugin {
-  const matchers = entries.map((entry) => ({
-    entry,
-    isMatch: picomatch(toPosix(entry.absoluteGlob), { dot: true }),
-  }))
-
   return () => {
-    const file = getFile()
-    const matched = file ? findMatch(matchers, file) : undefined
+    const matched = match(getFile())
     let hasFrontmatter = false
 
     return {
@@ -59,18 +76,7 @@ export function createFrontmatterPlugin(
   }
 }
 
-function findMatch(
-  matchers: { entry: FrontmatterSchemaEntry; isMatch: (s: string) => boolean }[],
-  file: string,
-): FrontmatterSchemaEntry | undefined {
-  const posix = toPosix(file)
-  for (const { entry, isMatch } of matchers) {
-    if (isMatch(posix)) return entry
-  }
-  return undefined
-}
-
-function stripExtension(modulePath: string): string {
+export function stripExtension(modulePath: string): string {
   return modulePath.replace(EXTENSION, '')
 }
 

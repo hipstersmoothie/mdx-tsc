@@ -1,9 +1,14 @@
 import { fileURLToPath } from 'node:url'
 import { createMdxLanguagePlugin } from '@mdx-js/language-service'
-import type { LanguagePlugin, VirtualCode } from '@volar/language-core'
+import type { CodeMapping, LanguagePlugin, VirtualCode } from '@volar/language-core'
 import remarkFrontmatter from 'remark-frontmatter'
 import remarkGfm from 'remark-gfm'
-import { createFrontmatterPlugin } from './frontmatter.js'
+import { createFrontmatterMatcher, createFrontmatterPlugin } from './frontmatter.js'
+import type { FrontmatterMatcher } from './frontmatter.js'
+import {
+  buildFrontmatterValidation,
+  extractYamlFrontmatter,
+} from './frontmatter-values.js'
 import type { MdxTsOptions } from './options.js'
 import { injectParseErrorDiagnostic, type ParseError } from './parse-errors.js'
 
@@ -27,11 +32,12 @@ export function createMdxTsLanguagePlugin(
   options: MdxTsOptions,
 ): LanguagePlugin<string> {
   let currentFile: string | undefined
+  const match = createFrontmatterMatcher(options.frontmatter)
 
   const base = createMdxLanguagePlugin(
     // @ts-expect-error -- PluggableList tuple typing is looser at runtime.
     remarkSyntaxPlugins,
-    [createFrontmatterPlugin(() => currentFile, options.frontmatter)],
+    [createFrontmatterPlugin(() => currentFile, match)],
     options.checkMdx,
     options.jsxImportSource,
   ) as unknown as LanguagePlugin<string>
@@ -44,7 +50,10 @@ export function createMdxTsLanguagePlugin(
       currentFile = toPath(fileNameOrUri)
       try {
         const code = originalCreateVirtualCode?.(fileNameOrUri, languageId, snapshot, ctx)
-        return code ? surfaceParseError(code, snapshot) : code
+        if (!code) return code
+        if (surfaceParseError(code, snapshot)) return code
+        checkFrontmatterValues(code, snapshot, currentFile, match)
+        return code
       } finally {
         currentFile = undefined
       }
@@ -53,20 +62,72 @@ export function createMdxTsLanguagePlugin(
 }
 
 /**
+ * When a document has frontmatter and a matching schema, append a
+ * `@satisfies`-validated object literal (built from the parsed YAML, mapped back
+ * to the YAML source) so the actual frontmatter *values* are type-checked — not
+ * just body usages of `frontmatter`.
+ */
+function checkFrontmatterValues(
+  code: VirtualCode,
+  snapshot: unknown,
+  file: string | undefined,
+  match: FrontmatterMatcher,
+): void {
+  const entry = match(file)
+  const embedded = code.embeddedCodes?.[0]
+  if (!entry || !embedded) return
+
+  const snap = snapshot as { getText(start: number, end: number): string; getLength(): number }
+  const mdx = snap.getText(0, snap.getLength())
+  const block = extractYamlFrontmatter(mdx)
+  if (!block) return
+
+  const validation = buildFrontmatterValidation(block.yaml, block.offset, entry)
+  if (!validation) return
+
+  const base = embedded.snapshot.getLength()
+  const shifted: CodeMapping = {
+    ...validation.mapping,
+    generatedOffsets: validation.mapping.generatedOffsets.map((offset) => offset + base),
+  }
+  code.embeddedCodes![0] = appendToEmbedded(embedded, validation.text, [shifted])
+}
+
+/** Append text and extra mappings to an embedded code, preserving its own mappings. */
+function appendToEmbedded(
+  embedded: VirtualCode,
+  append: string,
+  extraMappings: CodeMapping[],
+): VirtualCode {
+  const text = embedded.snapshot.getText(0, embedded.snapshot.getLength()) + append
+  return {
+    id: embedded.id,
+    languageId: embedded.languageId,
+    snapshot: {
+      getText: (start: number, end: number) => text.slice(start, end),
+      getLength: () => text.length,
+      getChangeRange: () => undefined,
+    },
+    mappings: [...embedded.mappings, ...extraMappings],
+  }
+}
+
+/**
  * When upstream failed to parse a document it exposes the thrown message on
  * `code.error` and emits an empty fallback JS file (so nothing is checked).
  * Replace that fallback's embedded JS with one that reports the parse error as
  * a diagnostic, so broken MDX fails the check instead of passing silently.
+ * Returns true when a parse error was handled (so no further checks apply).
  */
-function surfaceParseError(code: VirtualCode, snapshot: unknown): VirtualCode {
+function surfaceParseError(code: VirtualCode, snapshot: unknown): boolean {
   const error = (code as { error?: ParseError }).error
   const embedded = code.embeddedCodes?.[0]
-  if (!error || !embedded) return code
+  if (!error || !embedded) return false
 
   const snap = snapshot as { getText(start: number, end: number): string; getLength(): number }
   const mdx = snap.getText(0, snap.getLength())
   code.embeddedCodes![0] = injectParseErrorDiagnostic(embedded, mdx, error)
-  return code
+  return true
 }
 
 /** Normalize the plugin's `string | URI` file argument to a filesystem path. */

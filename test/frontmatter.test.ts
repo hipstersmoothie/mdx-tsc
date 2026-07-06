@@ -42,6 +42,34 @@ describe('frontmatter schema typing', () => {
   })
 })
 
+describe('frontmatter value checking', () => {
+  test('flags a value whose type does not match the schema', async () => {
+    const { diagnostics } = await runCli(['--project', project, '--pretty', 'false'])
+    const d = forFile(diagnostics, 'value-wrong-type.mdx')
+    expect(d).toHaveLength(1)
+    expect(d[0]).toMatchObject({ code: 'TS2322' })
+    // The offending field is named: the shape shows `date: number`, and the
+    // continuation line reads "Types of property 'date' are incompatible".
+    expect(d[0]!.message).toContain('date: number')
+  })
+
+  test('flags a missing required field, naming it', async () => {
+    const { diagnostics } = await runCli(['--project', project, '--pretty', 'false'])
+    const d = forFile(diagnostics, 'value-missing.mdx')
+    expect(d).toHaveLength(1)
+    expect(d[0]).toMatchObject({ code: 'TS2741' })
+    expect(d[0]!.message).toContain("Property 'date' is missing")
+  })
+
+  test('flags an unknown field on the offending key', async () => {
+    const { diagnostics } = await runCli(['--project', project, '--pretty', 'false'])
+    const d = forFile(diagnostics, 'value-excess.mdx')
+    expect(d).toHaveLength(1)
+    expect(d[0]).toMatchObject({ line: 5, column: 1, code: 'TS2353' })
+    expect(d[0]!.message).toContain('author')
+  })
+})
+
 describe('position fidelity under content shifts', () => {
   const mutationFile = path.join(blogDir, '_mutation.mdx')
 

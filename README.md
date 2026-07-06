@@ -106,13 +106,15 @@ export const docSchema = z.object({ title: z.string(), order: z.number() });
 export type DocFrontmatter = z.infer<typeof docSchema>;
 ```
 
-Now usages of `frontmatter` in the document body are checked:
+Both the **frontmatter values** and body **usages** of `frontmatter` are then
+checked against the schema:
 
 ```mdx
 ---
 title: Hello
-date: "2026-07-06"
+date: 20260706 # error: number is not assignable to string
 tags: [intro]
+author: Jane # error: 'author' does not exist in type 'BlogFrontmatter'
 ---
 
 # {frontmatter.title}
@@ -120,8 +122,9 @@ tags: [intro]
 Posted {frontmatter.publishedAt}. {/* error: publishedAt is not on BlogFrontmatter */}
 ```
 
-Files that match no glob keep an untyped (`any`) `frontmatter`, so this is
-opt-in per content collection.
+Wrong value types, unknown keys, and missing required fields are reported on the
+offending line of the YAML. Files that match no glob keep an untyped (`any`)
+`frontmatter`, so this is opt-in per content collection.
 
 ## Provided components (MDXProvider / `mdx-components.tsx`)
 
@@ -173,9 +176,6 @@ Make sure the `.d.ts` is covered by your tsconfig `include`.
 - **MDX must be valid JavaScript + JSDoc.** Like all MDX, the ESM in a document
   is JavaScript — TypeScript-only syntax such as `export const x: number = …`
   is not valid. Use JSDoc (`/** @type {number} */`) for annotations.
-- **Frontmatter is checked by usage.** In this release the declared schema types
-  the `frontmatter` value (so body usages are checked); it does not yet validate
-  the literal YAML values against the schema.
 - **Remark/rehype transformers aren't applied** (an upstream
   `@mdx-js/language-service` constraint), so syntax added by transformer plugins
   is not reflected in types.
