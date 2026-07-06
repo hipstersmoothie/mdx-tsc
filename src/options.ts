@@ -1,0 +1,161 @@
+import { createRequire } from 'node:module'
+import * as path from 'node:path'
+import type * as ts from 'typescript'
+// The real TypeScript API. The `ts` object Volar hands the runTsc callback is a
+// scope-eval proxy that only exposes a subset of tsc.js internals, so we import
+// the public API ourselves (typescript is a guaranteed peer dependency).
+import tsApi from 'typescript'
+
+/**
+ * Options mdx-ts derives for each program, sourced from the user's tsconfig.
+ *
+ * `checkMdx` and the `mdx-ts` block are non-standard top-level tsconfig keys
+ * that TypeScript discards when it parses compiler options, so we read them
+ * from the raw config file ourselves.
+ */
+export interface MdxTsOptions {
+  /** Whether to type-check MDX bodies strictly. From `"mdx": { "checkMdx" }`. */
+  checkMdx: boolean
+  /** JSX import source, e.g. `react`. From `compilerOptions.jsxImportSource`. */
+  jsxImportSource: string
+  /** Glob -> `./file#Type` frontmatter schema references. From `"mdx-ts".frontmatter`. */
+  frontmatter: FrontmatterSchemaEntry[]
+}
+
+export interface FrontmatterSchemaEntry {
+  /** The original glob, as written in tsconfig (relative to the config dir). */
+  glob: string
+  /** Absolute glob used for matching MDX file paths. */
+  absoluteGlob: string
+  /** Absolute path to the module declaring the frontmatter type. */
+  module: string
+  /** Exported type name within that module. */
+  typeName: string
+}
+
+interface RawTsconfig {
+  extends?: string | string[]
+  mdx?: { checkMdx?: unknown }
+  'mdx-ts'?: { frontmatter?: Record<string, unknown> }
+  [key: string]: unknown
+}
+
+/**
+ * Read a tsconfig's raw JSON, following `extends` so that our custom
+ * `mdx` / `mdx-ts` keys can live in a shared base config. Child values win.
+ */
+function readRawConfig(configPath: string, seen = new Set<string>()): RawTsconfig {
+  const absolute = path.resolve(configPath)
+  if (seen.has(absolute)) return {}
+  seen.add(absolute)
+
+  const { config, error } = tsApi.readConfigFile(absolute, tsApi.sys.readFile)
+  if (error || !config) return {}
+  const raw = config as RawTsconfig
+
+  const extendsList =
+    typeof raw.extends === 'string'
+      ? [raw.extends]
+      : Array.isArray(raw.extends)
+        ? raw.extends
+        : []
+
+  let base: RawTsconfig = {}
+  for (const ext of extendsList) {
+    const resolved = resolveExtends(ext, path.dirname(absolute))
+    if (resolved) base = mergeRaw(base, readRawConfig(resolved, seen))
+  }
+
+  return mergeRaw(base, raw)
+}
+
+function resolveExtends(ext: string, fromDir: string): string | undefined {
+  if (ext.startsWith('.') || path.isAbsolute(ext)) {
+    const p = path.resolve(fromDir, ext)
+    if (tsApi.sys.fileExists(p)) return p
+    const withExt = p.endsWith('.json') ? undefined : `${p}.json`
+    if (withExt && tsApi.sys.fileExists(withExt)) return withExt
+    return undefined
+  }
+  // Bare package specifier (e.g. "@tsconfig/node20/tsconfig.json").
+  try {
+    return createRequire(path.join(fromDir, 'noop.js')).resolve(ext)
+  } catch {
+    return undefined
+  }
+}
+
+/** Shallow-merge the two custom sections we care about; child overrides base. */
+function mergeRaw(base: RawTsconfig, child: RawTsconfig): RawTsconfig {
+  return {
+    ...base,
+    ...child,
+    mdx: { ...base.mdx, ...child.mdx },
+    'mdx-ts': {
+      ...base['mdx-ts'],
+      ...child['mdx-ts'],
+      frontmatter: {
+        ...base['mdx-ts']?.frontmatter,
+        ...child['mdx-ts']?.frontmatter,
+      },
+    },
+  }
+}
+
+/**
+ * Resolve mdx-ts options for a program. `configFilePath` is set by TypeScript
+ * whenever the program originates from a tsconfig (both `-p foo` and default
+ * discovery); we fall back to the compiler defaults when it is absent.
+ */
+export function resolveMdxTsOptions(
+  programOptions: ts.CreateProgramOptions,
+): MdxTsOptions {
+  const compilerOptions = programOptions.options
+  const configFilePath = (compilerOptions as { configFilePath?: string })
+    .configFilePath
+
+  const jsxImportSource = compilerOptions.jsxImportSource || 'react'
+
+  if (!configFilePath) {
+    return { checkMdx: true, jsxImportSource, frontmatter: [] }
+  }
+
+  const raw = readRawConfig(configFilePath)
+  const configDir = path.dirname(path.resolve(configFilePath))
+
+  // Strict checking is the whole point of the CLI: default to on, opt out via
+  // `"mdx": { "checkMdx": false }`.
+  const checkMdx = raw.mdx?.checkMdx !== false
+
+  return {
+    checkMdx,
+    jsxImportSource,
+    frontmatter: parseFrontmatterSchemas(raw['mdx-ts']?.frontmatter, configDir),
+  }
+}
+
+function parseFrontmatterSchemas(
+  map: Record<string, unknown> | undefined,
+  configDir: string,
+): FrontmatterSchemaEntry[] {
+  if (!map || typeof map !== 'object') return []
+  const entries: FrontmatterSchemaEntry[] = []
+  for (const [glob, ref] of Object.entries(map)) {
+    if (typeof ref !== 'string') continue
+    const hash = ref.lastIndexOf('#')
+    if (hash === -1) {
+      throw new Error(
+        `mdx-ts: frontmatter schema for "${glob}" must be of the form "./file#TypeName", got "${ref}"`,
+      )
+    }
+    const modulePath = ref.slice(0, hash)
+    const typeName = ref.slice(hash + 1)
+    entries.push({
+      glob,
+      absoluteGlob: path.resolve(configDir, glob),
+      module: path.resolve(configDir, modulePath),
+      typeName,
+    })
+  }
+  return entries
+}
