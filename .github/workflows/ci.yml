@@ -36,6 +36,6 @@ jobs:
           cache: pnpm
       - run: pnpm install
       - name: Pin TypeScript ${{ matrix.typescript }}
-        run: pnpm --filter mdx-ts add -D typescript@${{ matrix.typescript }}
+        run: pnpm --filter mdx-tsc add -D typescript@${{ matrix.typescript }}
       - run: pnpm run build
       - run: pnpm test

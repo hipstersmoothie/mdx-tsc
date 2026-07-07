@@ -17,7 +17,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const tsdk = await getTsdk(context);
   if (!tsdk) {
     void vscode.window.showErrorMessage(
-      'mdx-ts: could not locate a TypeScript installation. Set "typescript.tsdk" or install TypeScript in your workspace.',
+      'mdx-tsc: could not locate a TypeScript installation. Set "typescript.tsdk" or install TypeScript in your workspace.',
     );
     return;
   }
@@ -34,7 +34,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     },
   };
 
-  client = new LanguageClient("mdx-ts", "mdx-ts", serverOptions, clientOptions);
+  client = new LanguageClient("mdx-tsc", "mdx-tsc", serverOptions, clientOptions);
   await client.start();
 }
 
@@ -43,12 +43,12 @@ export function deactivate(): Thenable<void> | undefined {
 }
 
 /**
- * Resolve the mdx-ts language server entry. Prefers the installed `mdx-ts`
+ * Resolve the mdx-tsc language server entry. Prefers the installed `mdx-tsc`
  * package; falls back to the sibling build when developing inside the repo.
  */
 function resolveServerModule(context: vscode.ExtensionContext): string {
   try {
-    return require.resolve("mdx-ts/language-server");
+    return require.resolve("mdx-tsc/language-server");
   } catch {
     // Dev fallback: extensionPath is <repo>/editors/vscode.
     return path.join(
@@ -56,7 +56,7 @@ function resolveServerModule(context: vscode.ExtensionContext): string {
       "..",
       "..",
       "packages",
-      "mdx-ts",
+      "mdx-tsc",
       "dist",
       "language-server.js",
     );
@@ -64,7 +64,7 @@ function resolveServerModule(context: vscode.ExtensionContext): string {
 }
 
 /**
- * mdx-ts is additive: it contributes only type/frontmatter diagnostics and
+ * mdx-tsc is additive: it contributes only type/frontmatter diagnostics and
  * relies on the official MDX extension for highlighting, hover, completion, and
  * markdown features. Nudge the user to install it if it's missing.
  */
@@ -72,7 +72,7 @@ function suggestOfficialExtension(): void {
   const official = vscode.extensions.getExtension("unifiedjs.vscode-mdx");
   if (!official) {
     void vscode.window.showInformationMessage(
-      'mdx-ts adds type-checking on top of the official "MDX" extension. Install it for syntax highlighting and editor features, and set "mdx": { "checkMdx": false } in tsconfig so type errors are not reported twice.',
+      'mdx-tsc adds type-checking on top of the official "MDX" extension. Install it for syntax highlighting and editor features, and set "mdx": { "checkMdx": false } in tsconfig so type errors are not reported twice.',
     );
   }
 }

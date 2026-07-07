@@ -1,19 +1,22 @@
 {
-  "name": "mdx-ts-monorepo",
+  "name": "mdx-tsc-monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "Monorepo for mdx-ts: a type checker for MDX (CLI, language server, VS Code extension)",
+  "description": "Monorepo for mdx-tsc: a type checker for MDX (CLI, language server, VS Code extension)",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "pnpm -r run build",
-    "test": "pnpm --filter mdx-ts run test",
+    "test": "pnpm --filter mdx-tsc run test",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
-    "format:check": "oxfmt --check"
+    "format:check": "oxfmt --check",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "oxfmt": "^0.58.0",
     "oxlint": "^1.73.0"
   },

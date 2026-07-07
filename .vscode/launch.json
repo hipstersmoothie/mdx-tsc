@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Test mdx-ts extension (playground)",
+      "name": "Test mdx-tsc extension (playground)",
       "type": "extensionHost",
       "request": "launch",
       "args": [
@@ -10,7 +10,7 @@
         "${workspaceFolder}/playground"
       ],
       "outFiles": ["${workspaceFolder}/editors/vscode/dist/**/*.js"],
-      "preLaunchTask": "mdx-ts: build all"
+      "preLaunchTask": "mdx-tsc: build all"
     }
   ]
 }

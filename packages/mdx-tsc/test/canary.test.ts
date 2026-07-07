@@ -3,7 +3,7 @@ import { createMdxTsLanguagePlugin } from "../src/plugin.js";
 import type { MdxTsOptions } from "../src/options.js";
 
 /**
- * Guards the assumptions mdx-ts makes about @mdx-js/language-service's virtual
+ * Guards the assumptions mdx-tsc makes about @mdx-js/language-service's virtual
  * output. If an upstream update changes this shape, this fails in our CI rather
  * than silently degrading users' type checking.
  */
@@ -39,7 +39,7 @@ function virtualJsxFor(mdx: string, options: Partial<MdxTsOptions> = {}): string
 describe("upstream virtual-code shape", () => {
   test("projects MDX to a JSX module with the expected structure", () => {
     const jsx = virtualJsxFor('export const title = "Hi"\n\n# {title}\n');
-    // The anchors mdx-ts relies on across the upstream API.
+    // The anchors mdx-tsc relies on across the upstream API.
     expect(jsx).toContain("@jsxImportSource react");
     expect(jsx).toContain("function _createMdxContent(");
     expect(jsx).toContain("MDXContent");

@@ -9,7 +9,7 @@ export interface BlogFrontmatter {
 }
 
 /**
- * A zod schema whose inferred type is used as the frontmatter schema. mdx-ts
+ * A zod schema whose inferred type is used as the frontmatter schema. mdx-tsc
  * never runs zod — it only references the static `z.infer` type — so this stays
  * a pure type-check.
  */

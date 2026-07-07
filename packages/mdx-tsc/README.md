@@ -8,7 +8,7 @@ but until now there was no way to type-check it in CI. Editors could show errors
 nothing failed your build when an MDX file passed the wrong prop to a component
 or referenced a field that doesn't exist.
 
-`mdx-ts` is that missing piece. Its `mdx-tsc` command is a drop-in `tsc`: it
+`mdx-tsc` is that missing piece. Its `mdx-tsc` command is a drop-in `tsc`: it
 type-checks `.mdx` alongside your `.ts`/`.tsx`, reports errors at the exact spot
 in the MDX source, and exits non-zero when something is wrong.
 
@@ -25,7 +25,7 @@ match what you see in your editor.
 ## Install
 
 ```sh
-npm install --save-dev mdx-ts typescript
+npm install --save-dev mdx-tsc typescript
 ```
 
 `typescript` is a peer dependency — `mdx-tsc` uses whichever version your project
@@ -69,7 +69,7 @@ Point `include` at your `.mdx` files and turn on MDX checking:
   },
   // `mdx-tsc` always type-checks. `checkMdx` governs only the *official* MDX
   // editor extension — leave it `true` if that's your only editor tooling, or
-  // set it `false` when using the mdx-ts extension (see "Editor support").
+  // set it `false` when using the mdx-tsc extension (see "Editor support").
   "mdx": { "checkMdx": true },
   "include": ["**/*.mdx", "**/*.ts", "**/*.tsx"],
 }
@@ -77,7 +77,7 @@ Point `include` at your `.mdx` files and turn on MDX checking:
 
 ## Frontmatter typing
 
-`mdx-ts` can type each document's `frontmatter` against a schema you declare,
+`mdx-tsc` can type each document's `frontmatter` against a schema you declare,
 matched by glob, in the same `"mdx"` section of your tsconfig that holds
 `checkMdx`:
 
@@ -94,7 +94,7 @@ matched by glob, in the same `"mdx"` section of your tsconfig that holds
 ```
 
 Each value is `./module#ExportedType`. The referenced type can be a plain
-TypeScript type or a [Zod](https://zod.dev/) inferred type — mdx-ts only reads
+TypeScript type or a [Zod](https://zod.dev/) inferred type — mdx-tsc only reads
 the static type, it never runs your schema:
 
 ```ts
@@ -168,7 +168,7 @@ Make sure the `.d.ts` is covered by your tsconfig `include`.
 ## Editor support (squiggles)
 
 The frontmatter and type checks are available live in your editor through the
-**mdx-ts language server** (`mdx-ts-language-server`). It is **additive**: it
+**mdx-tsc language server** (`mdx-tsc-language-server`). It is **additive**: it
 publishes _only_ type and frontmatter diagnostics and advertises no other
 features, so it runs alongside the official
 [MDX extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)
@@ -176,10 +176,10 @@ without stepping on it.
 
 - **Keep the official MDX extension** for syntax highlighting, hover, completion,
   and markdown features.
-- **Add mdx-ts** for type + frontmatter squiggles.
+- **Add mdx-tsc** for type + frontmatter squiggles.
 - **Set `"mdx": { "checkMdx": false }`** in your tsconfig so the official
-  extension stops emitting type diagnostics — mdx-ts now owns those, so you don't
-  see each error twice. (`mdx-tsc` and the mdx-ts server always type-check
+  extension stops emitting type diagnostics — mdx-tsc now owns those, so you don't
+  see each error twice. (`mdx-tsc` and the mdx-tsc server always type-check
   regardless of this flag.)
 
 Setups:
@@ -187,7 +187,7 @@ Setups:
 - **VS Code**: the extension in [`editors/vscode`](./editors/vscode) launches the
   server for `.mdx` files.
 - **Neovim / Zed / Helix / any LSP editor**: point the editor at the
-  `mdx-ts-language-server` binary (stdio), passing
+  `mdx-tsc-language-server` binary (stdio), passing
   `initializationOptions.typescript.tsdk` (your TypeScript `lib` directory).
 
 ## What it checks
@@ -214,7 +214,7 @@ Setups:
 `mdx-tsc` runs the real TypeScript compiler through Volar's `runTsc`, which
 swaps in a program that understands `.mdx`. Each document is projected to a
 virtual JSX module (via `@mdx-js/language-service`) with source maps back to the
-MDX, so diagnostics land on the original file. mdx-ts adds frontmatter typing on
+MDX, so diagnostics land on the original file. mdx-tsc adds frontmatter typing on
 top of that projection and reads its configuration from your tsconfig.
 
 ## License

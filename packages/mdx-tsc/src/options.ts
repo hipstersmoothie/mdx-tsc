@@ -7,9 +7,9 @@ import type * as ts from "typescript";
 import tsApi from "typescript";
 
 /**
- * Options mdx-ts derives for each program, sourced from the user's tsconfig.
+ * Options mdx-tsc derives for each program, sourced from the user's tsconfig.
  *
- * `checkMdx` and the `mdx-ts` block are non-standard top-level tsconfig keys
+ * `checkMdx` and the `mdx-tsc` block are non-standard top-level tsconfig keys
  * that TypeScript discards when it parses compiler options, so we read them
  * from the raw config file ourselves.
  */
@@ -92,7 +92,7 @@ function mergeRaw(base: RawTsconfig, child: RawTsconfig): RawTsconfig {
 }
 
 /**
- * Resolve mdx-ts options for a program. `configFilePath` is set by TypeScript
+ * Resolve mdx-tsc options for a program. `configFilePath` is set by TypeScript
  * whenever the program originates from a tsconfig (both `-p foo` and default
  * discovery); we fall back to the compiler defaults when it is absent.
  */
@@ -119,7 +119,7 @@ export function resolveMdxTsOptionsFromConfig(
   const raw = readRawConfig(configFilePath);
   const configDir = path.dirname(path.resolve(configFilePath));
 
-  // Note: `mdx.checkMdx` is intentionally NOT read here. mdx-ts always
+  // Note: `mdx.checkMdx` is intentionally NOT read here. mdx-tsc always
   // type-checks (that is its purpose); `checkMdx` governs only whether the
   // official MDX extension also emits type diagnostics, so the two can run side
   // by side without duplication.
@@ -140,7 +140,7 @@ function parseFrontmatterSchemas(
     const hash = ref.lastIndexOf("#");
     if (hash === -1) {
       throw new Error(
-        `mdx-ts: frontmatter schema for "${glob}" must be of the form "./file#TypeName", got "${ref}"`,
+        `mdx-tsc: frontmatter schema for "${glob}" must be of the form "./file#TypeName", got "${ref}"`,
       );
     }
     const modulePath = ref.slice(0, hash);

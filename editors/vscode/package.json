@@ -1,15 +1,15 @@
 {
-  "name": "mdx-ts-vscode",
-  "displayName": "mdx-ts",
+  "name": "mdx-tsc-vscode",
+  "displayName": "mdx-tsc",
   "version": "0.1.0",
   "private": true,
-  "description": "Type-checking for MDX: frontmatter schemas, provided components, and parse errors — powered by the mdx-ts language server.",
+  "description": "Type-checking for MDX: frontmatter schemas, provided components, and parse errors — powered by the mdx-tsc language server.",
   "categories": [
     "Linters",
     "Programming Languages"
   ],
   "license": "MIT",
-  "publisher": "mdx-ts",
+  "publisher": "mdx-tsc",
   "main": "./dist/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run build",
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@volar/vscode": "~2.4.28",
-    "mdx-ts": "workspace:*",
+    "mdx-tsc": "workspace:*",
     "vscode-languageclient": "^10.1.0"
   },
   "devDependencies": {
@@ -42,9 +42,9 @@
       }
     ],
     "configuration": {
-      "title": "mdx-ts",
+      "title": "mdx-tsc",
       "properties": {
-        "mdx-ts.trace.server": {
+        "mdx-tsc.trace.server": {
           "type": "string",
           "enum": [
             "off",
@@ -52,7 +52,7 @@
             "verbose"
           ],
           "default": "off",
-          "description": "Trace the communication between VS Code and the mdx-ts language server."
+          "description": "Trace the communication between VS Code and the mdx-tsc language server."
         }
       }
     }

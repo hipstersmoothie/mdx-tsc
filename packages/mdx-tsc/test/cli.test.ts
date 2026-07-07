@@ -40,7 +40,7 @@ describe("mdx-tsc on the basic fixture", () => {
 
 describe("project resolution", () => {
   test("exits 2 with guidance when no project can be found", async () => {
-    const dir = await mkdtemp(path.join(tmpdir(), "mdx-ts-"));
+    const dir = await mkdtemp(path.join(tmpdir(), "mdx-tsc-"));
     try {
       const { exitCode, stderr } = await runCli([], dir);
       expect(exitCode).toBe(2);

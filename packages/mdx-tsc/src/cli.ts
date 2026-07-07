@@ -10,7 +10,7 @@ import { createMdxTsLanguagePlugin } from "./plugin.js";
  * mdx-tsc — a drop-in `tsc` that additionally type-checks `.mdx` files.
  *
  * All arguments are forwarded to the real TypeScript compiler untouched; the
- * only thing mdx-ts adds is the MDX language plugin (via Volar's runTsc) and a
+ * only thing mdx-tsc adds is the MDX language plugin (via Volar's runTsc) and a
  * friendlier error when no project can be found.
  */
 

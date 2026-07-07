@@ -47,7 +47,7 @@ export function createMdxTsLanguagePlugin(
     // @ts-expect-error -- PluggableList tuple typing is looser at runtime.
     remarkSyntaxPlugins,
     [createFrontmatterPlugin(() => currentFile, match)],
-    // mdx-ts always type-checks; `mdx.checkMdx` governs only the official
+    // mdx-tsc always type-checks; `mdx.checkMdx` governs only the official
     // extension, so we force strict checking here regardless.
     true,
     options.jsxImportSource,

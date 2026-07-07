@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "mdx-ts: build all",
+      "label": "mdx-tsc: build all",
       "type": "shell",
       "command": "pnpm run build",
       "problemMatcher": ["$tsc"],

@@ -1,7 +1,7 @@
 {
-  "name": "mdx-ts",
+  "name": "mdx-tsc",
   "version": "0.1.0",
-  "description": "A vue-tsc-style CLI type checker for MDX",
+  "description": "A tsc-style CLI (and language server) that type-checks MDX",
   "keywords": [
     "cli",
     "mdx",
@@ -10,10 +10,18 @@
     "typescript",
     "volar"
   ],
+  "homepage": "https://github.com/hipstersmoothie/mdx-tsc/tree/main/packages/mdx-tsc#readme",
+  "bugs": "https://github.com/hipstersmoothie/mdx-tsc/issues",
   "license": "MIT",
+  "author": "Andrew Lisowski",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hipstersmoothie/mdx-tsc.git",
+    "directory": "packages/mdx-tsc"
+  },
   "bin": {
-    "mdx-ts-language-server": "./dist/language-server.js",
-    "mdx-tsc": "./dist/cli.js"
+    "mdx-tsc": "./dist/cli.js",
+    "mdx-tsc-language-server": "./dist/language-server.js"
   },
   "files": [
     "dist"

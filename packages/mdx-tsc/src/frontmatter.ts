@@ -62,7 +62,7 @@ export function createFrontmatterPlugin(
         if (matched) {
           const specifier = JSON.stringify(stripExtension(matched.module));
           return (
-            `/** Typed by mdx-ts */\nexport const ${exportName} = ` +
+            `/** Typed by mdx-tsc */\nexport const ${exportName} = ` +
             `/** @type {import(${specifier}).${matched.typeName}} */ (undefined)`
           );
         }

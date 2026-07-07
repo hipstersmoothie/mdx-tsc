@@ -12,7 +12,7 @@ import { resolveMdxTsOptionsFromConfig } from "./options.js";
 import { createMdxTsLanguagePlugin } from "./plugin.js";
 
 /**
- * The mdx-ts language server: the same checking the CLI performs — MDX type
+ * The mdx-tsc language server: the same checking the CLI performs — MDX type
  * errors, provided-component props, frontmatter typing and value validation,
  * and parse errors — surfaced to any LSP editor as live diagnostics.
  *
@@ -20,7 +20,7 @@ import { createMdxTsLanguagePlugin } from "./plugin.js";
  * exactly. Wiring mirrors `@mdx-js/language-server`.
  */
 
-process.title = "mdx-ts-language-server";
+process.title = "mdx-tsc-language-server";
 
 const connection = createConnection();
 const server = createServer(connection);
@@ -48,7 +48,7 @@ connection.onInitialize((parameters) => {
     diagnosticsOnly(createTypeScriptServicePlugin(typescript, {})),
   );
 
-  /** Resolve mdx-ts options (jsxImportSource, frontmatter) from a tsconfig. */
+  /** Resolve mdx-tsc options (jsxImportSource, frontmatter) from a tsconfig. */
   function resolveOptions(ts: typeof import("typescript"), configFileName: string | undefined) {
     let jsxImportSource: string | undefined;
     if (configFileName) {
@@ -90,7 +90,7 @@ function diagnosticsOnly<T extends { name?: string; capabilities: Record<string,
     .create;
 
   const wrapped = {
-    name: "mdx-ts-diagnostics",
+    name: "mdx-tsc-diagnostics",
     capabilities: { diagnosticProvider: semantic.capabilities.diagnosticProvider },
     create(context: unknown) {
       const instance = create(context);
