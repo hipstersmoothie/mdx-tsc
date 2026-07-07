@@ -11,7 +11,7 @@ import {
 let client: LanguageClient | undefined
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  warnOnConflict()
+  suggestOfficialExtension()
 
   const serverModule = resolveServerModule(context)
   const tsdk = await getTsdk(context)
@@ -55,12 +55,16 @@ function resolveServerModule(context: vscode.ExtensionContext): string {
   }
 }
 
-/** The official MDX extension also binds `.mdx`; running both double-reports. */
-function warnOnConflict(): void {
+/**
+ * mdx-ts is additive: it contributes only type/frontmatter diagnostics and
+ * relies on the official MDX extension for highlighting, hover, completion, and
+ * markdown features. Nudge the user to install it if it's missing.
+ */
+function suggestOfficialExtension(): void {
   const official = vscode.extensions.getExtension('unifiedjs.vscode-mdx')
-  if (official) {
-    void vscode.window.showWarningMessage(
-      'mdx-ts and the official "MDX" extension are both installed. Disable one to avoid duplicate diagnostics (mdx-ts is a superset).',
+  if (!official) {
+    void vscode.window.showInformationMessage(
+      'mdx-ts adds type-checking on top of the official "MDX" extension. Install it for syntax highlighting and editor features, and set "mdx": { "checkMdx": false } in tsconfig so type errors are not reported twice.',
     )
   }
 }

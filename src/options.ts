@@ -14,8 +14,6 @@ import tsApi from 'typescript'
  * from the raw config file ourselves.
  */
 export interface MdxTsOptions {
-  /** Whether to type-check MDX bodies strictly. From `"mdx": { "checkMdx" }`. */
-  checkMdx: boolean
   /** JSX import source, e.g. `react`. From `compilerOptions.jsxImportSource`. */
   jsxImportSource: string
   /** Glob -> `./file#Type` frontmatter schema references. From `"mdx".frontmatter`. */
@@ -125,18 +123,17 @@ export function resolveMdxTsOptionsFromConfig(
   const source = jsxImportSource || 'react'
 
   if (!configFilePath) {
-    return { checkMdx: true, jsxImportSource: source, frontmatter: [] }
+    return { jsxImportSource: source, frontmatter: [] }
   }
 
   const raw = readRawConfig(configFilePath)
   const configDir = path.dirname(path.resolve(configFilePath))
 
-  // Strict checking is the whole point of mdx-ts: default to on, opt out via
-  // `"mdx": { "checkMdx": false }`.
-  const checkMdx = raw.mdx?.checkMdx !== false
-
+  // Note: `mdx.checkMdx` is intentionally NOT read here. mdx-ts always
+  // type-checks (that is its purpose); `checkMdx` governs only whether the
+  // official MDX extension also emits type diagnostics, so the two can run side
+  // by side without duplication.
   return {
-    checkMdx,
     jsxImportSource: source,
     frontmatter: parseFrontmatterSchemas(raw.mdx?.frontmatter, configDir),
   }

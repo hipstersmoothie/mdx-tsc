@@ -18,6 +18,15 @@ const remarkSyntaxPlugins = [
   remarkGfm,
 ]
 
+export interface MdxTsPluginHostOptions {
+  /**
+   * Whether to translate MDX parse errors into TypeScript diagnostics. On for
+   * the CLI; off for the language server, where the official MDX extension's
+   * service already reports parse errors (avoids duplicate diagnostics).
+   */
+  surfaceParseErrors?: boolean
+}
+
 /**
  * Build the MDX language plugin used for a program: the upstream
  * `@mdx-js/language-service` plugin, extended with frontmatter typing.
@@ -33,8 +42,10 @@ const remarkSyntaxPlugins = [
 // supports both, so we keep the parameter permissive.
 export function createMdxTsLanguagePlugin(
   options: MdxTsOptions,
+  host: MdxTsPluginHostOptions = {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): LanguagePlugin<any> {
+  const surfaceParseErrors = host.surfaceParseErrors ?? true
   let currentFile: string | undefined
   const match = createFrontmatterMatcher(options.frontmatter)
 
@@ -42,7 +53,9 @@ export function createMdxTsLanguagePlugin(
     // @ts-expect-error -- PluggableList tuple typing is looser at runtime.
     remarkSyntaxPlugins,
     [createFrontmatterPlugin(() => currentFile, match)],
-    options.checkMdx,
+    // mdx-ts always type-checks; `mdx.checkMdx` governs only the official
+    // extension, so we force strict checking here regardless.
+    true,
     options.jsxImportSource,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) as unknown as LanguagePlugin<any>
@@ -56,7 +69,12 @@ export function createMdxTsLanguagePlugin(
       try {
         const code = originalCreateVirtualCode?.(fileNameOrUri, languageId, snapshot, ctx)
         if (!code) return code
-        if (surfaceParseError(code, snapshot)) return code
+        if ((code as { error?: ParseError }).error) {
+          // A failed parse: optionally surface it, and never try to validate
+          // frontmatter against a fallback virtual file.
+          if (surfaceParseErrors) surfaceParseError(code, snapshot)
+          return code
+        }
         checkFrontmatterValues(code, snapshot, currentFile, match)
         return code
       } finally {

@@ -1,4 +1,4 @@
-# mdx-ts
+# mdx-tsc
 
 **A `tsc`-style CLI that type-checks your [MDX](https://mdxjs.com/).**
 
@@ -67,7 +67,9 @@ Point `include` at your `.mdx` files and turn on MDX checking:
     "noEmit": true,
     "skipLibCheck": true,
   },
-  // Enable strict MDX type-checking (on by default in mdx-tsc; set false to relax).
+  // `mdx-tsc` always type-checks. `checkMdx` governs only the *official* MDX
+  // editor extension — leave it `true` if that's your only editor tooling, or
+  // set it `false` when using the mdx-ts extension (see "Editor support").
   "mdx": { "checkMdx": true },
   "include": ["**/*.mdx", "**/*.ts", "**/*.tsx"],
 }
@@ -165,12 +167,25 @@ Make sure the `.d.ts` is covered by your tsconfig `include`.
 
 ## Editor support (squiggles)
 
-The same checks are available live in your editor through the **mdx-ts language
-server** (`mdx-ts-language-server`), which embeds the official
-`@mdx-js/language-service` — so it is a superset of the official MDX tooling.
+The frontmatter and type checks are available live in your editor through the
+**mdx-ts language server** (`mdx-ts-language-server`). It is **additive**: it
+publishes *only* type and frontmatter diagnostics and advertises no other
+features, so it runs alongside the official
+[MDX extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)
+without stepping on it.
+
+- **Keep the official MDX extension** for syntax highlighting, hover, completion,
+  and markdown features.
+- **Add mdx-ts** for type + frontmatter squiggles.
+- **Set `"mdx": { "checkMdx": false }`** in your tsconfig so the official
+  extension stops emitting type diagnostics — mdx-ts now owns those, so you don't
+  see each error twice. (`mdx-tsc` and the mdx-ts server always type-check
+  regardless of this flag.)
+
+Setups:
 
 - **VS Code**: the extension in [`editors/vscode`](./editors/vscode) launches the
-  server for `.mdx` files. Enable it *instead of* the official MDX extension.
+  server for `.mdx` files.
 - **Neovim / Zed / Helix / any LSP editor**: point the editor at the
   `mdx-ts-language-server` binary (stdio), passing
   `initializationOptions.typescript.tsdk` (your TypeScript `lib` directory).

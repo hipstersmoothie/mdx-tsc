@@ -9,7 +9,6 @@ import type { MdxTsOptions } from '../src/options.js'
  */
 function virtualJsxFor(mdx: string, options: Partial<MdxTsOptions> = {}): string {
   const plugin = createMdxTsLanguagePlugin({
-    checkMdx: true,
     jsxImportSource: 'react',
     frontmatter: [],
     ...options,
