@@ -157,8 +157,8 @@ function scopedFeatures<T extends { name?: string; capabilities: Record<string, 
     },
     create(context: unknown) {
       const instance = create(context);
-      const bind = (name: string) => (instance[name] as ((...a: unknown[]) => unknown) | undefined)
-        ?.bind(instance);
+      const bind = (name: string) =>
+        (instance[name] as ((...a: unknown[]) => unknown) | undefined)?.bind(instance);
       return {
         provideDiagnostics: bind("provideDiagnostics"),
         provideHover: onlyFrontmatter(instance, "provideHover"),
