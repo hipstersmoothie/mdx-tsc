@@ -217,6 +217,17 @@ virtual JSX module (via `@mdx-js/language-service`) with source maps back to the
 MDX, so diagnostics land on the original file. mdx-tsc adds frontmatter typing on
 top of that projection and reads its configuration from your tsconfig.
 
+## Acknowledgements
+
+`mdx-tsc` is built on [`mdx-analyzer`](https://github.com/mdx-js/mdx-analyzer)
+(MIT, © 2019 RxTS). Beyond depending on its `@mdx-js/language-service` package,
+the language-server wiring and the VS Code extension client are derived from
+mdx-analyzer's source. See [LICENSE](./LICENSE) for the attribution notice.
+
+The `runTsc`-based CLI is derived from Karl Horky's
+[`poc-mdx-type-checker-cli`](https://github.com/karlhorky/poc-mdx-type-checker-cli),
+shared in [mdx-analyzer#292](https://github.com/mdx-js/mdx-analyzer/issues/292#issuecomment-3220912899).
+
 ## License
 
 [MIT](./LICENSE)

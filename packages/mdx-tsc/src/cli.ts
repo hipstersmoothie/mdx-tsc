@@ -13,6 +13,10 @@ import { createMdxTsLanguagePlugin } from "./plugin.js";
  * All arguments are forwarded to the real TypeScript compiler untouched; the
  * only thing mdx-tsc adds is the MDX language plugin (via Volar's runTsc) and a
  * friendlier error when no project can be found.
+ *
+ * The `runTsc`-based approach is derived from Karl Horky's proof-of-concept
+ * (https://github.com/karlhorky/poc-mdx-type-checker-cli), shared in
+ * https://github.com/mdx-js/mdx-analyzer/issues/292#issuecomment-3220912899.
  */
 
 function main(): void {

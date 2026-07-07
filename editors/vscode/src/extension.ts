@@ -1,3 +1,7 @@
+// The Volar-based extension client below (LanguageClient setup, tsdk resolution,
+// and the `mdx` document selector) is derived from the vscode-mdx extension in
+// mdx-analyzer: https://github.com/mdx-js/mdx-analyzer — MIT License,
+// Copyright (c) 2019 RxTS. See the LICENSE file in this package for the full notice.
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { getTsdk } from "@volar/vscode";

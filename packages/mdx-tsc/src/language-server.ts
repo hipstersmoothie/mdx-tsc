@@ -18,7 +18,13 @@ import { createMdxTsLanguagePlugin, FRONTMATTER_SCOPE_SENTINEL } from "./plugin.
  * and parse errors — surfaced to any LSP editor as live diagnostics.
  *
  * It reuses `createMdxTsLanguagePlugin`, so editor squiggles match `mdx-tsc`
- * exactly. Wiring mirrors `@mdx-js/language-server`.
+ * exactly.
+ *
+ * The server wiring below (connection/server setup, the `onInitialize` handler,
+ * tsconfig resolution, and the `onInitialized` file watcher) is derived from
+ * mdx-analyzer's `@mdx-js/language-server` (packages/language-server/lib/index.js):
+ * https://github.com/mdx-js/mdx-analyzer — MIT License, Copyright (c) 2019 RxTS.
+ * See the LICENSE file at the repo root for the full notice.
  */
 
 process.title = "mdx-tsc-language-server";
