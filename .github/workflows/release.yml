@@ -28,7 +28,7 @@ jobs:
       # When none exist (i.e. after that PR merges), publishes to npm.
       - uses: changesets/action@v1
         with:
-          version: changeset version
+          version: pnpm changeset version
           publish: pnpm release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
