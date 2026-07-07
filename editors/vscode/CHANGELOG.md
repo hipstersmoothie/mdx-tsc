@@ -1,5 +1,11 @@
 # mdx-tsc-vscode
 
+## 0.3.0
+
+### Minor Changes
+
+- Unknown components (capitalized, neither imported nor provided) are now flagged instead of typed as `any`, via the updated mdx-tsc language server.
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "mdx-tsc",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A tsc-style CLI (and language server) that type-checks MDX",
   "keywords": [
     "cli",

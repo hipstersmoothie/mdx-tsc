@@ -1,7 +1,7 @@
 {
   "name": "mdx-tsc-vscode",
   "displayName": "mdx-tsc",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Type-checking for MDX: frontmatter schemas, provided components, and type errors — powered by the mdx-tsc language server.",
   "categories": [

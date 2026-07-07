@@ -1,5 +1,15 @@
 # mdx-tsc
 
+## 0.3.0
+
+### Minor Changes
+
+- Unknown components are now errors instead of `any`. A capitalized component used
+  in MDX that is neither imported nor declared on `MDXProvidedComponents` is
+  reported as `Property 'X' does not exist`, catching typos and missing imports.
+  mdx-tsc injects an ambient `MDXProvidedComponents` declaration into every
+  program; provider components still work by augmenting that interface.
+
 ## 0.2.0
 
 ### Minor Changes
