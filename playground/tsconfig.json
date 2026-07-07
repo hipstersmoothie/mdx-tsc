@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "mdx": {
+    "checkMdx": true
+  },
+  "mdx-ts": {
+    "frontmatter": {
+      "**/*.mdx": "./content.ts#PostFrontmatter"
+    }
+  },
+  "include": ["**/*.mdx", "**/*.ts", "**/*.tsx"]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "mdx-ts: build all",
+      "type": "shell",
+      "command": "npm run build && npm --prefix editors/vscode run compile",
+      "problemMatcher": ["$tsc"],
+      "presentation": { "reveal": "silent" }
+    }
+  ]
+}

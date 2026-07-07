@@ -1,0 +1,13 @@
+---
+title: Hello mdx-ts
+date: '2026-07-06'
+tags: [intro, demo]
+---
+
+import { Callout } from './Callout.js'
+
+# {frontmatter.title}
+
+Posted on {frontmatter.date} — filed under {frontmatter.tags.join(', ')}.
+
+<Callout kind="note">This document type-checks cleanly.</Callout>

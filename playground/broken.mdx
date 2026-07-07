@@ -1,0 +1,16 @@
+---
+title: Things that should squiggle
+date: 20260706
+tags: [demo]
+author: Jane
+---
+
+import { Callout } from './Callout.js'
+
+# {frontmatter.title}
+
+The publish date is {frontmatter.publishedAt}.
+
+<Callout kind="urgent">Unknown callout kind.</Callout>
+
+The tag count is {frontmatter.tags.toUpperCase()}.
