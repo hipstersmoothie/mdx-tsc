@@ -113,23 +113,36 @@ export function resolveMdxTsOptions(
   const compilerOptions = programOptions.options
   const configFilePath = (compilerOptions as { configFilePath?: string })
     .configFilePath
+  return resolveMdxTsOptionsFromConfig(
+    configFilePath,
+    compilerOptions.jsxImportSource,
+  )
+}
 
-  const jsxImportSource = compilerOptions.jsxImportSource || 'react'
+/**
+ * Resolve options directly from a tsconfig path (used by the language server,
+ * which is handed the config file name rather than a program).
+ */
+export function resolveMdxTsOptionsFromConfig(
+  configFilePath: string | undefined,
+  jsxImportSource: string | undefined,
+): MdxTsOptions {
+  const source = jsxImportSource || 'react'
 
   if (!configFilePath) {
-    return { checkMdx: true, jsxImportSource, frontmatter: [] }
+    return { checkMdx: true, jsxImportSource: source, frontmatter: [] }
   }
 
   const raw = readRawConfig(configFilePath)
   const configDir = path.dirname(path.resolve(configFilePath))
 
-  // Strict checking is the whole point of the CLI: default to on, opt out via
+  // Strict checking is the whole point of mdx-ts: default to on, opt out via
   // `"mdx": { "checkMdx": false }`.
   const checkMdx = raw.mdx?.checkMdx !== false
 
   return {
     checkMdx,
-    jsxImportSource,
+    jsxImportSource: source,
     frontmatter: parseFrontmatterSchemas(raw['mdx-ts']?.frontmatter, configDir),
   }
 }

@@ -13,10 +13,12 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "mdx-tsc": "./dist/cli.js"
+    "mdx-tsc": "./dist/cli.js",
+    "mdx-ts-language-server": "./dist/language-server.js"
   },
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./language-server": "./dist/language-server.js"
   },
   "files": [
     "dist"
@@ -30,10 +32,13 @@
   },
   "dependencies": {
     "@mdx-js/language-service": "~0.7.3",
+    "@volar/language-server": "~2.4.28",
     "@volar/typescript": "~2.4.28",
     "picomatch": "^4.0.5",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
+    "volar-service-markdown": "^0.0.71",
+    "volar-service-typescript": "^0.0.71",
     "yaml": "^2.9.0"
   },
   "peerDependencies": {

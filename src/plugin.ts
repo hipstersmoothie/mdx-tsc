@@ -28,9 +28,13 @@ const remarkSyntaxPlugins = [
  * plugin reads during `finalize()` — sound because upstream instantiates and
  * runs plugins synchronously within `createVirtualCode`.
  */
+// The script-id type varies by host: the CLI (runTsc) uses `string`, the
+// language server (createTypeScriptProject) uses `URI`. The upstream plugin
+// supports both, so we keep the parameter permissive.
 export function createMdxTsLanguagePlugin(
   options: MdxTsOptions,
-): LanguagePlugin<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): LanguagePlugin<any> {
   let currentFile: string | undefined
   const match = createFrontmatterMatcher(options.frontmatter)
 
@@ -40,7 +44,8 @@ export function createMdxTsLanguagePlugin(
     [createFrontmatterPlugin(() => currentFile, match)],
     options.checkMdx,
     options.jsxImportSource,
-  ) as unknown as LanguagePlugin<string>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) as unknown as LanguagePlugin<any>
 
   const originalCreateVirtualCode = base.createVirtualCode?.bind(base)
 

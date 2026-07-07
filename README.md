@@ -161,6 +161,18 @@ Make sure the `.d.ts` is covered by your tsconfig `include`.
 - run: npx mdx-tsc --project tsconfig.json
 ```
 
+## Editor support (squiggles)
+
+The same checks are available live in your editor through the **mdx-ts language
+server** (`mdx-ts-language-server`), which embeds the official
+`@mdx-js/language-service` — so it is a superset of the official MDX tooling.
+
+- **VS Code**: the extension in [`editors/vscode`](./editors/vscode) launches the
+  server for `.mdx` files. Enable it *instead of* the official MDX extension.
+- **Neovim / Zed / Helix / any LSP editor**: point the editor at the
+  `mdx-ts-language-server` binary (stdio), passing
+  `initializationOptions.typescript.tsdk` (your TypeScript `lib` directory).
+
 ## What it checks
 
 - ESM `import`/`export` resolution in MDX
