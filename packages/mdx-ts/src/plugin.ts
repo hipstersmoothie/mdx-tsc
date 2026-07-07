@@ -1,22 +1,16 @@
-import { fileURLToPath } from 'node:url'
-import { createMdxLanguagePlugin } from '@mdx-js/language-service'
-import type { CodeMapping, LanguagePlugin, VirtualCode } from '@volar/language-core'
-import remarkFrontmatter from 'remark-frontmatter'
-import remarkGfm from 'remark-gfm'
-import { createFrontmatterMatcher, createFrontmatterPlugin } from './frontmatter.js'
-import type { FrontmatterMatcher } from './frontmatter.js'
-import {
-  buildFrontmatterValidation,
-  extractYamlFrontmatter,
-} from './frontmatter-values.js'
-import type { MdxTsOptions } from './options.js'
-import { injectParseErrorDiagnostic, type ParseError } from './parse-errors.js'
+import { fileURLToPath } from "node:url";
+import { createMdxLanguagePlugin } from "@mdx-js/language-service";
+import type { CodeMapping, LanguagePlugin, VirtualCode } from "@volar/language-core";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkGfm from "remark-gfm";
+import { createFrontmatterMatcher, createFrontmatterPlugin } from "./frontmatter.js";
+import type { FrontmatterMatcher } from "./frontmatter.js";
+import { buildFrontmatterValidation, extractYamlFrontmatter } from "./frontmatter-values.js";
+import type { MdxTsOptions } from "./options.js";
+import { injectParseErrorDiagnostic, type ParseError } from "./parse-errors.js";
 
 /** The default remark *syntax* plugins enabled for parsing MDX. */
-const remarkSyntaxPlugins = [
-  [remarkFrontmatter, ['toml', 'yaml']],
-  remarkGfm,
-]
+const remarkSyntaxPlugins = [[remarkFrontmatter, ["toml", "yaml"]], remarkGfm];
 
 export interface MdxTsPluginHostOptions {
   /**
@@ -24,7 +18,7 @@ export interface MdxTsPluginHostOptions {
    * the CLI; off for the language server, where the official MDX extension's
    * service already reports parse errors (avoids duplicate diagnostics).
    */
-  surfaceParseErrors?: boolean
+  surfaceParseErrors?: boolean;
 }
 
 /**
@@ -45,9 +39,9 @@ export function createMdxTsLanguagePlugin(
   host: MdxTsPluginHostOptions = {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): LanguagePlugin<any> {
-  const surfaceParseErrors = host.surfaceParseErrors ?? true
-  let currentFile: string | undefined
-  const match = createFrontmatterMatcher(options.frontmatter)
+  const surfaceParseErrors = host.surfaceParseErrors ?? true;
+  let currentFile: string | undefined;
+  const match = createFrontmatterMatcher(options.frontmatter);
 
   const base = createMdxLanguagePlugin(
     // @ts-expect-error -- PluggableList tuple typing is looser at runtime.
@@ -58,30 +52,30 @@ export function createMdxTsLanguagePlugin(
     true,
     options.jsxImportSource,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) as unknown as LanguagePlugin<any>
+  ) as unknown as LanguagePlugin<any>;
 
-  const originalCreateVirtualCode = base.createVirtualCode?.bind(base)
+  const originalCreateVirtualCode = base.createVirtualCode?.bind(base);
 
   return {
     ...base,
     createVirtualCode(fileNameOrUri, languageId, snapshot, ctx) {
-      currentFile = toPath(fileNameOrUri)
+      currentFile = toPath(fileNameOrUri);
       try {
-        const code = originalCreateVirtualCode?.(fileNameOrUri, languageId, snapshot, ctx)
-        if (!code) return code
+        const code = originalCreateVirtualCode?.(fileNameOrUri, languageId, snapshot, ctx);
+        if (!code) return code;
         if ((code as { error?: ParseError }).error) {
           // A failed parse: optionally surface it, and never try to validate
           // frontmatter against a fallback virtual file.
-          if (surfaceParseErrors) surfaceParseError(code, snapshot)
-          return code
+          if (surfaceParseErrors) surfaceParseError(code, snapshot);
+          return code;
         }
-        checkFrontmatterValues(code, snapshot, currentFile, match)
-        return code
+        checkFrontmatterValues(code, snapshot, currentFile, match);
+        return code;
       } finally {
-        currentFile = undefined
+        currentFile = undefined;
       }
     },
-  }
+  };
 }
 
 /**
@@ -96,24 +90,24 @@ function checkFrontmatterValues(
   file: string | undefined,
   match: FrontmatterMatcher,
 ): void {
-  const entry = match(file)
-  const embedded = code.embeddedCodes?.[0]
-  if (!entry || !embedded) return
+  const entry = match(file);
+  const embedded = code.embeddedCodes?.[0];
+  if (!entry || !embedded) return;
 
-  const snap = snapshot as { getText(start: number, end: number): string; getLength(): number }
-  const mdx = snap.getText(0, snap.getLength())
-  const block = extractYamlFrontmatter(mdx)
-  if (!block) return
+  const snap = snapshot as { getText(start: number, end: number): string; getLength(): number };
+  const mdx = snap.getText(0, snap.getLength());
+  const block = extractYamlFrontmatter(mdx);
+  if (!block) return;
 
-  const validation = buildFrontmatterValidation(block.yaml, block.offset, entry)
-  if (!validation) return
+  const validation = buildFrontmatterValidation(block.yaml, block.offset, entry);
+  if (!validation) return;
 
-  const base = embedded.snapshot.getLength()
+  const base = embedded.snapshot.getLength();
   const shifted: CodeMapping = {
     ...validation.mapping,
     generatedOffsets: validation.mapping.generatedOffsets.map((offset) => offset + base),
-  }
-  code.embeddedCodes![0] = appendToEmbedded(embedded, validation.text, [shifted])
+  };
+  code.embeddedCodes![0] = appendToEmbedded(embedded, validation.text, [shifted]);
 }
 
 /** Append text and extra mappings to an embedded code, preserving its own mappings. */
@@ -122,7 +116,7 @@ function appendToEmbedded(
   append: string,
   extraMappings: CodeMapping[],
 ): VirtualCode {
-  const text = embedded.snapshot.getText(0, embedded.snapshot.getLength()) + append
+  const text = embedded.snapshot.getText(0, embedded.snapshot.getLength()) + append;
   return {
     id: embedded.id,
     languageId: embedded.languageId,
@@ -132,7 +126,7 @@ function appendToEmbedded(
       getChangeRange: () => undefined,
     },
     mappings: [...embedded.mappings, ...extraMappings],
-  }
+  };
 }
 
 /**
@@ -143,26 +137,24 @@ function appendToEmbedded(
  * Returns true when a parse error was handled (so no further checks apply).
  */
 function surfaceParseError(code: VirtualCode, snapshot: unknown): boolean {
-  const error = (code as { error?: ParseError }).error
-  const embedded = code.embeddedCodes?.[0]
-  if (!error || !embedded) return false
+  const error = (code as { error?: ParseError }).error;
+  const embedded = code.embeddedCodes?.[0];
+  if (!error || !embedded) return false;
 
-  const snap = snapshot as { getText(start: number, end: number): string; getLength(): number }
-  const mdx = snap.getText(0, snap.getLength())
-  code.embeddedCodes![0] = injectParseErrorDiagnostic(embedded, mdx, error)
-  return true
+  const snap = snapshot as { getText(start: number, end: number): string; getLength(): number };
+  const mdx = snap.getText(0, snap.getLength());
+  code.embeddedCodes![0] = injectParseErrorDiagnostic(embedded, mdx, error);
+  return true;
 }
 
 /** Normalize the plugin's `string | URI` file argument to a filesystem path. */
 function toPath(fileNameOrUri: unknown): string | undefined {
-  if (typeof fileNameOrUri === 'string') {
-    return fileNameOrUri.startsWith('file://')
-      ? fileURLToPath(fileNameOrUri)
-      : fileNameOrUri
+  if (typeof fileNameOrUri === "string") {
+    return fileNameOrUri.startsWith("file://") ? fileURLToPath(fileNameOrUri) : fileNameOrUri;
   }
-  if (fileNameOrUri && typeof fileNameOrUri === 'object') {
-    const uri = fileNameOrUri as { fsPath?: string; path?: string }
-    return uri.fsPath ?? uri.path ?? String(fileNameOrUri)
+  if (fileNameOrUri && typeof fileNameOrUri === "object") {
+    const uri = fileNameOrUri as { fsPath?: string; path?: string };
+    return uri.fsPath ?? uri.path ?? String(fileNameOrUri);
   }
-  return undefined
+  return undefined;
 }

@@ -169,7 +169,7 @@ Make sure the `.d.ts` is covered by your tsconfig `include`.
 
 The frontmatter and type checks are available live in your editor through the
 **mdx-ts language server** (`mdx-ts-language-server`). It is **additive**: it
-publishes *only* type and frontmatter diagnostics and advertises no other
+publishes _only_ type and frontmatter diagnostics and advertises no other
 features, so it runs alongside the official
 [MDX extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)
 without stepping on it.

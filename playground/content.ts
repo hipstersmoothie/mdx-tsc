@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 /** Frontmatter schema for blog posts in this playground. */
 export const postSchema = z.object({
@@ -6,6 +6,6 @@ export const postSchema = z.object({
   date: z.string(),
   tags: z.array(z.string()),
   draft: z.boolean().optional(),
-})
+});
 
-export type PostFrontmatter = z.infer<typeof postSchema>
+export type PostFrontmatter = z.infer<typeof postSchema>;

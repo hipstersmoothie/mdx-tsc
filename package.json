@@ -5,12 +5,20 @@
   "description": "Monorepo for mdx-ts: a type checker for MDX (CLI, language server, VS Code extension)",
   "license": "MIT",
   "type": "module",
-  "packageManager": "pnpm@10.26.0",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm --filter mdx-ts run test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.58.0",
+    "oxlint": "^1.73.0"
+  },
   "engines": {
     "node": ">=18"
   },
-  "scripts": {
-    "build": "pnpm -r run build",
-    "test": "pnpm --filter mdx-ts run test"
-  }
+  "packageManager": "pnpm@10.26.0"
 }

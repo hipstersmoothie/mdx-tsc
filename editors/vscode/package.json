@@ -1,38 +1,16 @@
 {
   "name": "mdx-ts-vscode",
   "displayName": "mdx-ts",
-  "description": "Type-checking for MDX: frontmatter schemas, provided components, and parse errors — powered by the mdx-ts language server.",
   "version": "0.1.0",
-  "publisher": "mdx-ts",
   "private": true,
+  "description": "Type-checking for MDX: frontmatter schemas, provided components, and parse errors — powered by the mdx-ts language server.",
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.82.0"
-  },
-  "categories": ["Programming Languages", "Linters"],
-  "activationEvents": ["onLanguage:mdx"],
+  "publisher": "mdx-ts",
   "main": "./dist/extension.js",
-  "contributes": {
-    "languages": [
-      {
-        "id": "mdx",
-        "aliases": ["MDX", "mdx"],
-        "extensions": [".mdx"],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "configuration": {
-      "title": "mdx-ts",
-      "properties": {
-        "mdx-ts.trace.server": {
-          "type": "string",
-          "enum": ["off", "messages", "verbose"],
-          "default": "off",
-          "description": "Trace the communication between VS Code and the mdx-ts language server."
-        }
-      }
-    }
-  },
   "scripts": {
     "vscode:prepublish": "npm run build",
     "build": "tsc -p ./",
@@ -48,5 +26,41 @@
     "@types/node": "^22.0.0",
     "@types/vscode": "^1.82.0",
     "typescript": "^5.6.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "mdx",
+        "aliases": [
+          "MDX",
+          "mdx"
+        ],
+        "extensions": [
+          ".mdx"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "configuration": {
+      "title": "mdx-ts",
+      "properties": {
+        "mdx-ts.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Trace the communication between VS Code and the mdx-ts language server."
+        }
+      }
+    }
+  },
+  "activationEvents": [
+    "onLanguage:mdx"
+  ],
+  "engines": {
+    "vscode": "^1.82.0"
   }
 }

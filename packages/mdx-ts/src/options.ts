@@ -1,10 +1,10 @@
-import { createRequire } from 'node:module'
-import * as path from 'node:path'
-import type * as ts from 'typescript'
+import { createRequire } from "node:module";
+import * as path from "node:path";
+import type * as ts from "typescript";
 // The real TypeScript API. The `ts` object Volar hands the runTsc callback is a
 // scope-eval proxy that only exposes a subset of tsc.js internals, so we import
 // the public API ourselves (typescript is a guaranteed peer dependency).
-import tsApi from 'typescript'
+import tsApi from "typescript";
 
 /**
  * Options mdx-ts derives for each program, sourced from the user's tsconfig.
@@ -15,26 +15,26 @@ import tsApi from 'typescript'
  */
 export interface MdxTsOptions {
   /** JSX import source, e.g. `react`. From `compilerOptions.jsxImportSource`. */
-  jsxImportSource: string
+  jsxImportSource: string;
   /** Glob -> `./file#Type` frontmatter schema references. From `"mdx".frontmatter`. */
-  frontmatter: FrontmatterSchemaEntry[]
+  frontmatter: FrontmatterSchemaEntry[];
 }
 
 export interface FrontmatterSchemaEntry {
   /** The original glob, as written in tsconfig (relative to the config dir). */
-  glob: string
+  glob: string;
   /** Absolute glob used for matching MDX file paths. */
-  absoluteGlob: string
+  absoluteGlob: string;
   /** Absolute path to the module declaring the frontmatter type. */
-  module: string
+  module: string;
   /** Exported type name within that module. */
-  typeName: string
+  typeName: string;
 }
 
 interface RawTsconfig {
-  extends?: string | string[]
-  mdx?: { checkMdx?: unknown; frontmatter?: Record<string, unknown> }
-  [key: string]: unknown
+  extends?: string | string[];
+  mdx?: { checkMdx?: unknown; frontmatter?: Record<string, unknown> };
+  [key: string]: unknown;
 }
 
 /**
@@ -42,43 +42,39 @@ interface RawTsconfig {
  * live in a shared base config. Child values win.
  */
 function readRawConfig(configPath: string, seen = new Set<string>()): RawTsconfig {
-  const absolute = path.resolve(configPath)
-  if (seen.has(absolute)) return {}
-  seen.add(absolute)
+  const absolute = path.resolve(configPath);
+  if (seen.has(absolute)) return {};
+  seen.add(absolute);
 
-  const { config, error } = tsApi.readConfigFile(absolute, tsApi.sys.readFile)
-  if (error || !config) return {}
-  const raw = config as RawTsconfig
+  const { config, error } = tsApi.readConfigFile(absolute, tsApi.sys.readFile);
+  if (error || !config) return {};
+  const raw = config as RawTsconfig;
 
   const extendsList =
-    typeof raw.extends === 'string'
-      ? [raw.extends]
-      : Array.isArray(raw.extends)
-        ? raw.extends
-        : []
+    typeof raw.extends === "string" ? [raw.extends] : Array.isArray(raw.extends) ? raw.extends : [];
 
-  let base: RawTsconfig = {}
+  let base: RawTsconfig = {};
   for (const ext of extendsList) {
-    const resolved = resolveExtends(ext, path.dirname(absolute))
-    if (resolved) base = mergeRaw(base, readRawConfig(resolved, seen))
+    const resolved = resolveExtends(ext, path.dirname(absolute));
+    if (resolved) base = mergeRaw(base, readRawConfig(resolved, seen));
   }
 
-  return mergeRaw(base, raw)
+  return mergeRaw(base, raw);
 }
 
 function resolveExtends(ext: string, fromDir: string): string | undefined {
-  if (ext.startsWith('.') || path.isAbsolute(ext)) {
-    const p = path.resolve(fromDir, ext)
-    if (tsApi.sys.fileExists(p)) return p
-    const withExt = p.endsWith('.json') ? undefined : `${p}.json`
-    if (withExt && tsApi.sys.fileExists(withExt)) return withExt
-    return undefined
+  if (ext.startsWith(".") || path.isAbsolute(ext)) {
+    const p = path.resolve(fromDir, ext);
+    if (tsApi.sys.fileExists(p)) return p;
+    const withExt = p.endsWith(".json") ? undefined : `${p}.json`;
+    if (withExt && tsApi.sys.fileExists(withExt)) return withExt;
+    return undefined;
   }
   // Bare package specifier (e.g. "@tsconfig/node20/tsconfig.json").
   try {
-    return createRequire(path.join(fromDir, 'noop.js')).resolve(ext)
+    return createRequire(path.join(fromDir, "noop.js")).resolve(ext);
   } catch {
-    return undefined
+    return undefined;
   }
 }
 
@@ -92,7 +88,7 @@ function mergeRaw(base: RawTsconfig, child: RawTsconfig): RawTsconfig {
       ...child.mdx,
       frontmatter: { ...base.mdx?.frontmatter, ...child.mdx?.frontmatter },
     },
-  }
+  };
 }
 
 /**
@@ -100,16 +96,10 @@ function mergeRaw(base: RawTsconfig, child: RawTsconfig): RawTsconfig {
  * whenever the program originates from a tsconfig (both `-p foo` and default
  * discovery); we fall back to the compiler defaults when it is absent.
  */
-export function resolveMdxTsOptions(
-  programOptions: ts.CreateProgramOptions,
-): MdxTsOptions {
-  const compilerOptions = programOptions.options
-  const configFilePath = (compilerOptions as { configFilePath?: string })
-    .configFilePath
-  return resolveMdxTsOptionsFromConfig(
-    configFilePath,
-    compilerOptions.jsxImportSource,
-  )
+export function resolveMdxTsOptions(programOptions: ts.CreateProgramOptions): MdxTsOptions {
+  const compilerOptions = programOptions.options;
+  const configFilePath = (compilerOptions as { configFilePath?: string }).configFilePath;
+  return resolveMdxTsOptionsFromConfig(configFilePath, compilerOptions.jsxImportSource);
 }
 
 /**
@@ -120,14 +110,14 @@ export function resolveMdxTsOptionsFromConfig(
   configFilePath: string | undefined,
   jsxImportSource: string | undefined,
 ): MdxTsOptions {
-  const source = jsxImportSource || 'react'
+  const source = jsxImportSource || "react";
 
   if (!configFilePath) {
-    return { jsxImportSource: source, frontmatter: [] }
+    return { jsxImportSource: source, frontmatter: [] };
   }
 
-  const raw = readRawConfig(configFilePath)
-  const configDir = path.dirname(path.resolve(configFilePath))
+  const raw = readRawConfig(configFilePath);
+  const configDir = path.dirname(path.resolve(configFilePath));
 
   // Note: `mdx.checkMdx` is intentionally NOT read here. mdx-ts always
   // type-checks (that is its purpose); `checkMdx` governs only whether the
@@ -136,31 +126,31 @@ export function resolveMdxTsOptionsFromConfig(
   return {
     jsxImportSource: source,
     frontmatter: parseFrontmatterSchemas(raw.mdx?.frontmatter, configDir),
-  }
+  };
 }
 
 function parseFrontmatterSchemas(
   map: Record<string, unknown> | undefined,
   configDir: string,
 ): FrontmatterSchemaEntry[] {
-  if (!map || typeof map !== 'object') return []
-  const entries: FrontmatterSchemaEntry[] = []
+  if (!map || typeof map !== "object") return [];
+  const entries: FrontmatterSchemaEntry[] = [];
   for (const [glob, ref] of Object.entries(map)) {
-    if (typeof ref !== 'string') continue
-    const hash = ref.lastIndexOf('#')
+    if (typeof ref !== "string") continue;
+    const hash = ref.lastIndexOf("#");
     if (hash === -1) {
       throw new Error(
         `mdx-ts: frontmatter schema for "${glob}" must be of the form "./file#TypeName", got "${ref}"`,
-      )
+      );
     }
-    const modulePath = ref.slice(0, hash)
-    const typeName = ref.slice(hash + 1)
+    const modulePath = ref.slice(0, hash);
+    const typeName = ref.slice(hash + 1);
     entries.push({
       glob,
       absoluteGlob: path.resolve(configDir, glob),
       module: path.resolve(configDir, modulePath),
       typeName,
-    })
+    });
   }
-  return entries
+  return entries;
 }

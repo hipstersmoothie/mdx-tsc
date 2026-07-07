@@ -1,45 +1,45 @@
-import * as path from 'node:path'
-import { getTsdk } from '@volar/vscode'
-import * as vscode from 'vscode'
+import * as path from "node:path";
+import { getTsdk } from "@volar/vscode";
+import * as vscode from "vscode";
 import {
   LanguageClient,
   type LanguageClientOptions,
   type ServerOptions,
   TransportKind,
-} from 'vscode-languageclient/node'
+} from "vscode-languageclient/node";
 
-let client: LanguageClient | undefined
+let client: LanguageClient | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  suggestOfficialExtension()
+  suggestOfficialExtension();
 
-  const serverModule = resolveServerModule(context)
-  const tsdk = await getTsdk(context)
+  const serverModule = resolveServerModule(context);
+  const tsdk = await getTsdk(context);
   if (!tsdk) {
     void vscode.window.showErrorMessage(
       'mdx-ts: could not locate a TypeScript installation. Set "typescript.tsdk" or install TypeScript in your workspace.',
-    )
-    return
+    );
+    return;
   }
 
   const serverOptions: ServerOptions = {
     run: { module: serverModule, transport: TransportKind.stdio },
     debug: { module: serverModule, transport: TransportKind.stdio },
-  }
+  };
 
   const clientOptions: LanguageClientOptions = {
-    documentSelector: [{ language: 'mdx' }],
+    documentSelector: [{ language: "mdx" }],
     initializationOptions: {
       typescript: { tsdk: tsdk.tsdk, enabled: true },
     },
-  }
+  };
 
-  client = new LanguageClient('mdx-ts', 'mdx-ts', serverOptions, clientOptions)
-  await client.start()
+  client = new LanguageClient("mdx-ts", "mdx-ts", serverOptions, clientOptions);
+  await client.start();
 }
 
 export function deactivate(): Thenable<void> | undefined {
-  return client?.stop()
+  return client?.stop();
 }
 
 /**
@@ -48,18 +48,18 @@ export function deactivate(): Thenable<void> | undefined {
  */
 function resolveServerModule(context: vscode.ExtensionContext): string {
   try {
-    return require.resolve('mdx-ts/language-server')
+    return require.resolve("mdx-ts/language-server");
   } catch {
     // Dev fallback: extensionPath is <repo>/editors/vscode.
     return path.join(
       context.extensionPath,
-      '..',
-      '..',
-      'packages',
-      'mdx-ts',
-      'dist',
-      'language-server.js',
-    )
+      "..",
+      "..",
+      "packages",
+      "mdx-ts",
+      "dist",
+      "language-server.js",
+    );
   }
 }
 
@@ -69,10 +69,10 @@ function resolveServerModule(context: vscode.ExtensionContext): string {
  * markdown features. Nudge the user to install it if it's missing.
  */
 function suggestOfficialExtension(): void {
-  const official = vscode.extensions.getExtension('unifiedjs.vscode-mdx')
+  const official = vscode.extensions.getExtension("unifiedjs.vscode-mdx");
   if (!official) {
     void vscode.window.showInformationMessage(
       'mdx-ts adds type-checking on top of the official "MDX" extension. Install it for syntax highlighting and editor features, and set "mdx": { "checkMdx": false } in tsconfig so type errors are not reported twice.',
-    )
+    );
   }
 }

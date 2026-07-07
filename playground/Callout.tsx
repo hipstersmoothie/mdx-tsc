@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react";
 
-export function Callout(props: { kind: 'note' | 'warning'; children?: ReactNode }) {
-  return <div className={`callout callout-${props.kind}`}>{props.children}</div>
+export function Callout(props: { kind: "note" | "warning"; children?: ReactNode }) {
+  return <div className={`callout callout-${props.kind}`}>{props.children}</div>;
 }
