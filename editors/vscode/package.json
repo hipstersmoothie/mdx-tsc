@@ -24,7 +24,7 @@
     "url": "git+https://github.com/hipstersmoothie/mdx-tsc.git",
     "directory": "editors/vscode"
   },
-  "publisher": "hipstersmoothie",
+  "publisher": "hipstersmoothie-public",
   "main": "./dist/extension.js",
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
