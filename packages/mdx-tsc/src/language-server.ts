@@ -8,6 +8,7 @@ import {
   loadTsdkByPath,
 } from "@volar/language-server/node.js";
 import { create as createTypeScriptServicePlugin } from "volar-service-typescript";
+import { GLOBALS_DTS_CONTENT } from "./globals.js";
 import { resolveMdxTsOptionsFromConfig } from "./options.js";
 import { createMdxTsLanguagePlugin, FRONTMATTER_SCOPE_SENTINEL } from "./plugin.js";
 
@@ -51,15 +52,22 @@ connection.onInitialize((parameters) => {
 
   return server.initialize(
     parameters,
-    createTypeScriptProject(typescript, diagnosticMessages, ({ configFileName }) => ({
-      languagePlugins: [
-        createMdxTsLanguagePlugin(resolveOptions(typescript, configFileName), {
-          // Let the official MDX extension report parse errors, so a document
-          // that fails to parse doesn't get two squiggles.
-          surfaceParseErrors: false,
-        }),
-      ],
-    })),
+    createTypeScriptProject(
+      typescript,
+      diagnosticMessages,
+      ({ configFileName, projectHost, sys }) => {
+        injectGlobals(configFileName, projectHost, sys);
+        return {
+          languagePlugins: [
+            createMdxTsLanguagePlugin(resolveOptions(typescript, configFileName), {
+              // Let the official MDX extension report parse errors, so a document
+              // that fails to parse doesn't get two squiggles.
+              surfaceParseErrors: false,
+            }),
+          ],
+        };
+      },
+    ),
     servicePlugin,
   );
 
@@ -87,6 +95,39 @@ connection.onInitialized(() => {
 });
 
 connection.listen();
+
+interface ProjectHost {
+  getScriptFileNames(): string[];
+}
+interface ProjectSys {
+  getCurrentDirectory(): string;
+  readFile(path: string, encoding?: string): string | undefined;
+  fileExists(path: string): boolean;
+}
+
+/**
+ * Add the ambient `MDXProvidedComponents` declaration to the project as a
+ * virtual `.d.ts`, so unknown components are errors rather than `any`. Served in
+ * memory (not from disk) so it works from the bundled server too.
+ */
+function injectGlobals(
+  configFileName: string | undefined,
+  projectHost: ProjectHost,
+  sys: ProjectSys,
+): void {
+  const dir = configFileName ? path.dirname(configFileName) : sys.getCurrentDirectory();
+  const virtualPath = path.join(dir, "__mdx-tsc-globals__.d.ts");
+
+  const getScriptFileNames = projectHost.getScriptFileNames.bind(projectHost);
+  projectHost.getScriptFileNames = () => [...getScriptFileNames(), virtualPath];
+
+  const readFile = sys.readFile.bind(sys);
+  sys.readFile = (fileName, encoding) =>
+    fileName === virtualPath ? GLOBALS_DTS_CONTENT : readFile(fileName, encoding);
+
+  const fileExists = sys.fileExists.bind(sys);
+  sys.fileExists = (fileName) => fileName === virtualPath || fileExists(fileName);
+}
 
 /**
  * Reduce the TypeScript service plugins to a single diagnostics-only plugin.

@@ -24,7 +24,8 @@
     "mdx-tsc-language-server": "./dist/language-server.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "globals.d.ts"
   ],
   "type": "module",
   "exports": {

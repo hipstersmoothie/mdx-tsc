@@ -3,6 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runTsc } from "@volar/typescript/lib/quickstart/runTsc.js";
+import { globalsDtsPath } from "./globals.js";
 import { resolveMdxTsOptions } from "./options.js";
 import { createMdxTsLanguagePlugin } from "./plugin.js";
 
@@ -29,6 +30,12 @@ function main(): void {
     fileURLToPath(import.meta.resolve("typescript/lib/tsc.js")),
     [".mdx"],
     (_ts, programOptions) => {
+      // Add the ambient MDXProvidedComponents declaration so unknown components
+      // are errors, not `any`.
+      (programOptions as { rootNames: readonly string[] }).rootNames = [
+        ...programOptions.rootNames,
+        globalsDtsPath(),
+      ];
       const options = resolveMdxTsOptions(programOptions);
       return {
         languagePlugins: [createMdxTsLanguagePlugin(options)],
