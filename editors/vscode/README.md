@@ -16,7 +16,7 @@ extension. **Enable only one** — this extension warns if both are active.
 
 Your project needs a `tsconfig.json` that includes your `.mdx` files and turns
 on MDX checking (`"mdx": { "checkMdx": true }`). Frontmatter schemas are declared
-in an `"mdx-ts"` section. See the main [mdx-ts README](../../README.md).
+in that same `"mdx"` section. See the main [mdx-ts README](../../README.md).
 
 ## Develop
 

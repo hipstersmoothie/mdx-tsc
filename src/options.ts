@@ -18,7 +18,7 @@ export interface MdxTsOptions {
   checkMdx: boolean
   /** JSX import source, e.g. `react`. From `compilerOptions.jsxImportSource`. */
   jsxImportSource: string
-  /** Glob -> `./file#Type` frontmatter schema references. From `"mdx-ts".frontmatter`. */
+  /** Glob -> `./file#Type` frontmatter schema references. From `"mdx".frontmatter`. */
   frontmatter: FrontmatterSchemaEntry[]
 }
 
@@ -35,14 +35,13 @@ export interface FrontmatterSchemaEntry {
 
 interface RawTsconfig {
   extends?: string | string[]
-  mdx?: { checkMdx?: unknown }
-  'mdx-ts'?: { frontmatter?: Record<string, unknown> }
+  mdx?: { checkMdx?: unknown; frontmatter?: Record<string, unknown> }
   [key: string]: unknown
 }
 
 /**
- * Read a tsconfig's raw JSON, following `extends` so that our custom
- * `mdx` / `mdx-ts` keys can live in a shared base config. Child values win.
+ * Read a tsconfig's raw JSON, following `extends` so that the `mdx` config can
+ * live in a shared base config. Child values win.
  */
 function readRawConfig(configPath: string, seen = new Set<string>()): RawTsconfig {
   const absolute = path.resolve(configPath)
@@ -85,19 +84,15 @@ function resolveExtends(ext: string, fromDir: string): string | undefined {
   }
 }
 
-/** Shallow-merge the two custom sections we care about; child overrides base. */
+/** Shallow-merge the `mdx` section (incl. its frontmatter map); child wins. */
 function mergeRaw(base: RawTsconfig, child: RawTsconfig): RawTsconfig {
   return {
     ...base,
     ...child,
-    mdx: { ...base.mdx, ...child.mdx },
-    'mdx-ts': {
-      ...base['mdx-ts'],
-      ...child['mdx-ts'],
-      frontmatter: {
-        ...base['mdx-ts']?.frontmatter,
-        ...child['mdx-ts']?.frontmatter,
-      },
+    mdx: {
+      ...base.mdx,
+      ...child.mdx,
+      frontmatter: { ...base.mdx?.frontmatter, ...child.mdx?.frontmatter },
     },
   }
 }
@@ -143,7 +138,7 @@ export function resolveMdxTsOptionsFromConfig(
   return {
     checkMdx,
     jsxImportSource: source,
-    frontmatter: parseFrontmatterSchemas(raw['mdx-ts']?.frontmatter, configDir),
+    frontmatter: parseFrontmatterSchemas(raw.mdx?.frontmatter, configDir),
   }
 }
 

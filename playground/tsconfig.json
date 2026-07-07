@@ -14,9 +14,7 @@
     "types": []
   },
   "mdx": {
-    "checkMdx": true
-  },
-  "mdx-ts": {
+    "checkMdx": true,
     "frontmatter": {
       "**/*.mdx": "./content.ts#PostFrontmatter"
     }

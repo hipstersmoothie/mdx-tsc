@@ -14,9 +14,7 @@
     "types": []
   },
   "mdx": {
-    "checkMdx": true
-  },
-  "mdx-ts": {
+    "checkMdx": true,
     "frontmatter": {
       "blog/**/*.mdx": "./schema.ts#BlogFrontmatter",
       "docs/**/*.mdx": "./schema.ts#DocFrontmatter"

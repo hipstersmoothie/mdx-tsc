@@ -76,11 +76,13 @@ Point `include` at your `.mdx` files and turn on MDX checking:
 ## Frontmatter typing
 
 `mdx-ts` can type each document's `frontmatter` against a schema you declare,
-matched by glob, in an `"mdx-ts"` section of your tsconfig:
+matched by glob, in the same `"mdx"` section of your tsconfig that holds
+`checkMdx`:
 
 ```jsonc
 {
-  "mdx-ts": {
+  "mdx": {
+    "checkMdx": true,
     "frontmatter": {
       "content/blog/**/*.mdx": "./src/content.ts#BlogFrontmatter",
       "content/docs/**/*.mdx": "./src/content.ts#DocFrontmatter",
