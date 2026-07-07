@@ -28,12 +28,35 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     debug: { module: serverModule, transport: TransportKind.stdio },
   };
 
+  const languageFeatures = vscode.workspace
+    .getConfiguration("mdx-tsc")
+    .get<string>("languageFeatures", "scoped");
+
   const clientOptions: LanguageClientOptions = {
     documentSelector: [{ language: "mdx" }],
     initializationOptions: {
       typescript: { tsdk: tsdk.tsdk, enabled: true },
+      languageFeatures,
     },
   };
+
+  // The server reads `languageFeatures` once, at initialize, so a change needs a
+  // fresh window. Nudge the user rather than silently doing nothing.
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (!event.affectsConfiguration("mdx-tsc.languageFeatures")) return;
+      void vscode.window
+        .showInformationMessage(
+          "mdx-tsc: reload the window to apply the language-features change.",
+          "Reload",
+        )
+        .then((choice) => {
+          if (choice === "Reload") {
+            void vscode.commands.executeCommand("workbench.action.reloadWindow");
+          }
+        });
+    }),
+  );
 
   client = new LanguageClient("mdx-tsc", "mdx-tsc", serverOptions, clientOptions);
   await client.start();

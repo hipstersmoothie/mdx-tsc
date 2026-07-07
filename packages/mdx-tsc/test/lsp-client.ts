@@ -10,6 +10,15 @@ export interface LspDiagnostic {
   range: { start: { line: number; character: number } };
 }
 
+/** Flatten an LSP Hover `contents` (string | MarkupContent | MarkedString[]) to plain text. */
+function renderHover(contents: unknown): string {
+  if (!contents) return "";
+  if (typeof contents === "string") return contents;
+  if (Array.isArray(contents)) return contents.map(renderHover).join("\n");
+  const c = contents as { value?: string };
+  return c.value ?? "";
+}
+
 /** A tiny stdio LSP client — just enough to drive the server in tests. */
 export class LspClient {
   private child: ChildProcessWithoutNullStreams;
@@ -94,6 +103,43 @@ export class LspClient {
       textDocument: { uri, languageId: "mdx", version: 1, text },
     });
     return uri;
+  }
+
+  /** Hover at a position, polling until the language service warms up (or times out). */
+  async hover(
+    uri: string,
+    position: { line: number; character: number },
+    timeoutMs = 20_000,
+  ): Promise<string> {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+      const res = (await this.request("textDocument/hover", {
+        textDocument: { uri },
+        position,
+      })) as { contents?: unknown } | null;
+      const text = renderHover(res?.contents);
+      if (text || Date.now() > deadline) return text;
+      await new Promise((r) => setTimeout(r, 200));
+    }
+  }
+
+  /** Completion labels at a position, polling until non-empty (or timeout). */
+  async completionLabels(
+    uri: string,
+    position: { line: number; character: number },
+    timeoutMs = 20_000,
+  ): Promise<string[]> {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+      const res = (await this.request("textDocument/completion", {
+        textDocument: { uri },
+        position,
+        context: { triggerKind: 1 },
+      })) as { items?: { label: string }[] } | { label: string }[] | null;
+      const items = Array.isArray(res) ? res : (res?.items ?? []);
+      if (items.length > 0 || Date.now() > deadline) return items.map((i) => i.label);
+      await new Promise((r) => setTimeout(r, 200));
+    }
   }
 
   /** Wait for the next non-empty diagnostics for a uri (or return [] on timeout). */

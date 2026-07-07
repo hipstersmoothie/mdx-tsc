@@ -12,6 +12,14 @@ import { injectParseErrorDiagnostic, type ParseError } from "./parse-errors.js";
 /** The default remark *syntax* plugins enabled for parsing MDX. */
 const remarkSyntaxPlugins = [[remarkFrontmatter, ["toml", "yaml"]], remarkGfm];
 
+/**
+ * Marks the start of the injected frontmatter value-validation block in the
+ * generated code. The `scoped` language-features mode uses it to recognize YAML
+ * frontmatter positions (which map into this block, not onto a `frontmatter.`
+ * expression) as in-scope for hover/definition.
+ */
+export const FRONTMATTER_SCOPE_SENTINEL = "/*mdx-tsc-fm*/";
+
 export interface MdxTsPluginHostOptions {
   /**
    * Whether to translate MDX parse errors into TypeScript diagnostics. On for
@@ -102,12 +110,18 @@ function checkFrontmatterValues(
   const validation = buildFrontmatterValidation(block.yaml, block.offset, entry);
   if (!validation) return;
 
-  const base = embedded.snapshot.getLength();
-  const shifted: CodeMapping = {
-    ...validation.mapping,
-    generatedOffsets: validation.mapping.generatedOffsets.map((offset) => offset + base),
-  };
-  code.embeddedCodes![0] = appendToEmbedded(embedded, validation.text, [shifted]);
+  // Prefix a sentinel so `scoped` mode can recognize positions inside this block
+  // (YAML frontmatter maps here); the mapping offsets shift past it accordingly.
+  const base = embedded.snapshot.getLength() + FRONTMATTER_SCOPE_SENTINEL.length;
+  const shifted: CodeMapping[] = validation.mappings.map((mapping) => ({
+    ...mapping,
+    generatedOffsets: mapping.generatedOffsets.map((offset) => offset + base),
+  }));
+  code.embeddedCodes![0] = appendToEmbedded(
+    embedded,
+    FRONTMATTER_SCOPE_SENTINEL + validation.text,
+    shifted,
+  );
 }
 
 /** Append text and extra mappings to an embedded code, preserving its own mappings. */

@@ -7,7 +7,6 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "allowJs": true,
-    "checkJs": true,
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,

@@ -44,6 +44,15 @@
     "vscode-languageclient": "^10.1.0"
   },
   "contributes": {
+    "configurationDefaults": {
+      "[mdx]": {
+        "editor.quickSuggestions": {
+          "other": true,
+          "comments": false,
+          "strings": true
+        }
+      }
+    },
     "languages": [
       {
         "id": "mdx",
@@ -60,6 +69,22 @@
     "configuration": {
       "title": "mdx-tsc",
       "properties": {
+        "mdx-tsc.languageFeatures": {
+          "type": "string",
+          "enum": [
+            "scoped",
+            "full",
+            "off"
+          ],
+          "default": "scoped",
+          "markdownEnumDescriptions": [
+            "Provide hover, go-to-definition, and completion **only** for schema-typed `frontmatter` (and member chains rooted at it) — the feature the official MDX extension can't offer — and stay silent elsewhere, so nothing is duplicated. Diagnostics are always on.",
+            "Provide the **full** TypeScript service (hover/definition/completion everywhere). Surfaces typed `frontmatter`, but **duplicates** hovers and completions the official MDX extension also provides.",
+            "Contribute **only diagnostics** (squiggles); leave all hover/definition/completion to the official MDX extension."
+          ],
+          "markdownDescription": "How much of the TypeScript language service mdx-tsc contributes on top of the official MDX extension. mdx-tsc's unique value is schema-typed `frontmatter`, which the official extension can't provide; beyond that its hover/completion merely duplicate the official plugin.\n\n- `scoped` (default) — hover/completion/definition only for `frontmatter`; no duplication.\n- `full` — the whole TS service; duplicates the official plugin's hovers/completions.\n- `off` — diagnostics only (fully additive).\n\nRequires reloading the window.",
+          "description": "How much of the TypeScript language service mdx-tsc contributes: 'scoped' (frontmatter only, default), 'full' (everything, duplicates the official MDX extension), or 'off' (diagnostics only). Requires reloading the window."
+        },
         "mdx-tsc.trace.server": {
           "type": "string",
           "enum": [
