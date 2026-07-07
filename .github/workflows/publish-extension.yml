@@ -1,0 +1,27 @@
+name: Publish extension
+
+# Publishes editors/vscode to the VS Code Marketplace.
+# Bump editors/vscode/package.json version, then push a tag `vscode-v<version>`
+# (or run this workflow manually). Requires a VSCE_PAT repository secret with
+# publish rights for the `hipstersmoothie` publisher.
+on:
+  push:
+    tags: ["vscode-v*"]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
+      # The extension bundles the built mdx-tsc language server.
+      - run: pnpm --filter mdx-tsc run build
+      - run: pnpm --filter mdx-tsc-vscode exec vsce publish --no-dependencies
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}

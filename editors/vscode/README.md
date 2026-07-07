@@ -29,18 +29,25 @@ schemas are declared in the `"mdx"` section. See the main
 
 ## Develop
 
-```sh
-# from the repo root, build the server the extension launches
-npm run build
+From the repo root:
 
-# then, in this folder
-cd editors/vscode
-npm install
-npm run compile
+```sh
+pnpm install
+pnpm build          # builds the mdx-tsc server, then bundles this extension
 ```
 
-Press <kbd>F5</kbd> (**Run mdx-tsc extension**) to open an Extension Development
-Host, then open a project with `.mdx` files to see diagnostics.
+Press <kbd>F5</kbd> (**Test mdx-tsc extension (playground)**) to open an
+Extension Development Host with the demo project loaded.
 
-The TypeScript SDK is resolved via `@volar/vscode` (`typescript.tsdk` setting or
-VS Code's bundled TypeScript), so checking matches your workspace.
+The extension and the language server are bundled with esbuild into
+`dist/extension.js` and `dist/server.js`, so the packaged `.vsix` is
+self-contained. The TypeScript SDK is resolved via `@volar/vscode`
+(`typescript.tsdk` setting or VS Code's bundled TypeScript), so checking matches
+your workspace.
+
+## Publishing
+
+`pnpm --filter mdx-tsc-vscode run package` builds a `.vsix`. Releases are
+automated: bump `version`, push a `vscode-v<version>` tag, and the
+[publish workflow](../../.github/workflows/publish-extension.yml) runs
+`vsce publish` (needs a `VSCE_PAT` secret).

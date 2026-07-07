@@ -3,29 +3,45 @@
   "displayName": "mdx-tsc",
   "version": "0.1.0",
   "private": true,
-  "description": "Type-checking for MDX: frontmatter schemas, provided components, and parse errors — powered by the mdx-tsc language server.",
+  "description": "Type-checking for MDX: frontmatter schemas, provided components, and type errors — powered by the mdx-tsc language server.",
   "categories": [
     "Linters",
     "Programming Languages"
   ],
+  "keywords": [
+    "frontmatter",
+    "mdx",
+    "type-check",
+    "typescript",
+    "volar"
+  ],
+  "homepage": "https://github.com/hipstersmoothie/mdx-tsc/tree/main/editors/vscode#readme",
+  "bugs": "https://github.com/hipstersmoothie/mdx-tsc/issues",
   "license": "MIT",
-  "publisher": "mdx-tsc",
+  "author": "Andrew Lisowski",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hipstersmoothie/mdx-tsc.git",
+    "directory": "editors/vscode"
+  },
+  "publisher": "hipstersmoothie",
   "main": "./dist/extension.js",
   "scripts": {
-    "vscode:prepublish": "npm run build",
-    "build": "tsc -p ./",
-    "compile": "tsc -p ./",
-    "watch": "tsc -p ./ --watch"
-  },
-  "dependencies": {
-    "@volar/vscode": "~2.4.28",
-    "mdx-tsc": "workspace:*",
-    "vscode-languageclient": "^10.1.0"
+    "typecheck": "tsc --noEmit -p .",
+    "build": "npm run typecheck && node esbuild.js",
+    "vscode:prepublish": "npm run typecheck && node esbuild.js --production",
+    "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --no-dependencies"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/vscode": "^1.82.0",
-    "typescript": "^5.6.0"
+    "@volar/vscode": "~2.4.28",
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.28.1",
+    "mdx-tsc": "workspace:*",
+    "typescript": "^5.6.0",
+    "vscode-languageclient": "^10.1.0"
   },
   "contributes": {
     "languages": [

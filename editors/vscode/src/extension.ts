@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { getTsdk } from "@volar/vscode";
 import * as vscode from "vscode";
@@ -43,24 +44,14 @@ export function deactivate(): Thenable<void> | undefined {
 }
 
 /**
- * Resolve the mdx-tsc language server entry. Prefers the installed `mdx-tsc`
- * package; falls back to the sibling build when developing inside the repo.
+ * Resolve the mdx-tsc language server entry. In a packaged extension this is the
+ * bundled `dist/server.js`; when running from source it falls back to the
+ * `mdx-tsc` package's built server.
  */
 function resolveServerModule(context: vscode.ExtensionContext): string {
-  try {
-    return require.resolve("mdx-tsc/language-server");
-  } catch {
-    // Dev fallback: extensionPath is <repo>/editors/vscode.
-    return path.join(
-      context.extensionPath,
-      "..",
-      "..",
-      "packages",
-      "mdx-tsc",
-      "dist",
-      "language-server.js",
-    );
-  }
+  const bundled = path.join(context.extensionPath, "dist", "server.js");
+  if (fs.existsSync(bundled)) return bundled;
+  return require.resolve("mdx-tsc/language-server");
 }
 
 /**
