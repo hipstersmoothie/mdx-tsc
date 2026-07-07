@@ -47,7 +47,9 @@ your workspace.
 
 ## Publishing
 
-`pnpm --filter mdx-tsc-vscode run package` builds a `.vsix`. Releases are
-automated: bump `version`, push a `vscode-v<version>` tag, and the
-[publish workflow](../../.github/workflows/publish-extension.yml) runs
-`vsce publish` (needs a `VSCE_PAT` secret).
+Build a `.vsix` and upload it to the Marketplace manually:
+
+```sh
+pnpm --filter mdx-tsc-vscode run package
+# -> editors/vscode/mdx-tsc-vscode-<version>.vsix
+```

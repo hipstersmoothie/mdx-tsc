@@ -33,20 +33,24 @@ too for syntax highlighting — mdx-tsc is additive and only adds diagnostics.
 
 ## Releasing
 
-Only `mdx-tsc` is published to npm (the extension and playground are private).
-Releases are managed with [changesets](https://github.com/changesets/changesets):
+Publishing is done **locally** (no CI publish workflow). Only `mdx-tsc` goes to
+npm; the extension and playground are private.
+
+**npm (`mdx-tsc`)** — versioned with
+[changesets](https://github.com/changesets/changesets):
 
 ```sh
-pnpm changeset          # record a change (choose the bump + write a summary)
+pnpm changeset          # record a change (bump + summary)
+pnpm changeset version  # apply pending changesets to versions + changelogs
+pnpm release            # build + `changeset publish` (needs `npm login`)
 ```
 
-On push to `main`, the [Release workflow](.github/workflows/release.yml) either
-opens a "Version Packages" PR (when changesets are pending) or, once that PR is
-merged, runs `pnpm release` (`build` + `changeset publish`) to publish to npm.
+**VS Code extension** — build a `.vsix` and upload it to the Marketplace
+manually:
 
-**One-time setup:** add an `NPM_TOKEN` repository secret with publish rights. The
-first push after that publishes the current `0.1.0` (no changeset needed for the
-initial release). To publish manually instead: `pnpm release`.
+```sh
+pnpm --filter mdx-tsc-vscode run package   # -> editors/vscode/mdx-tsc-vscode-<version>.vsix
+```
 
 ## License
 

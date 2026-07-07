@@ -11,7 +11,10 @@ const common = {
   platform: "node",
   format: "cjs",
   target: "node18",
-  external: ["vscode"],
+  // `vscode` is injected by the host. The extension spawns the server as a
+  // child process and only `require.resolve`s it as a source-mode fallback, so
+  // leave that specifier unbundled.
+  external: ["vscode", "mdx-tsc/language-server"],
   sourcemap: !production,
   minify: production,
   logLevel: "info",
