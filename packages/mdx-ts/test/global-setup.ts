@@ -6,5 +6,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 /** Build the CLI once before the suite so tests run against fresh dist output. */
 export default async function setup(): Promise<void> {
-  await execa('npm', ['run', 'build'], { cwd: root, stdio: 'inherit' })
+  const tsc = path.join(root, 'node_modules', '.bin', 'tsc')
+  await execa(tsc, ['-p', 'tsconfig.build.json'], { cwd: root, stdio: 'inherit' })
 }

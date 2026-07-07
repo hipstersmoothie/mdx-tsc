@@ -4,7 +4,7 @@
     {
       "label": "mdx-ts: build all",
       "type": "shell",
-      "command": "npm run build && npm --prefix editors/vscode run compile",
+      "command": "pnpm run build",
       "problemMatcher": ["$tsc"],
       "presentation": { "reveal": "silent" }
     }

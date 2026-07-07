@@ -34,12 +34,14 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p ./",
     "compile": "tsc -p ./",
     "watch": "tsc -p ./ --watch"
   },
   "dependencies": {
     "@volar/vscode": "~2.4.28",
+    "mdx-ts": "workspace:*",
     "vscode-languageclient": "^10.1.0"
   },
   "devDependencies": {

@@ -16,10 +16,13 @@ jobs:
     name: node ${{ matrix.node }} / ts ${{ matrix.typescript }}
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - run: npm install
-      - run: npm install --no-save typescript@${{ matrix.typescript }}
-      - run: npm run build
-      - run: npm test
+          cache: pnpm
+      - run: pnpm install
+      - name: Pin TypeScript ${{ matrix.typescript }}
+        run: pnpm --filter mdx-ts add -D typescript@${{ matrix.typescript }}
+      - run: pnpm run build
+      - run: pnpm test

@@ -1,0 +1,61 @@
+{
+  "name": "mdx-ts",
+  "version": "0.1.0",
+  "description": "A vue-tsc-style CLI type checker for MDX",
+  "keywords": [
+    "mdx",
+    "typescript",
+    "type-check",
+    "tsc",
+    "volar",
+    "cli"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "mdx-tsc": "./dist/cli.js",
+    "mdx-ts-language-server": "./dist/language-server.js"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./language-server": "./dist/language-server.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@mdx-js/language-service": "~0.7.3",
+    "@volar/language-core": "~2.4.28",
+    "@volar/language-server": "~2.4.28",
+    "@volar/typescript": "~2.4.28",
+    "picomatch": "^4.0.5",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "volar-service-typescript": "^0.0.71",
+    "yaml": "^2.9.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^22.0.0",
+    "@types/picomatch": "^4.0.2",
+    "@types/react": "^18.3.31",
+    "execa": "^9.6.1",
+    "react": "^18.3.1",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.10",
+    "zod": "^3.25.76"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

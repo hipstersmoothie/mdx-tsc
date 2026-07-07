@@ -51,7 +51,15 @@ function resolveServerModule(context: vscode.ExtensionContext): string {
     return require.resolve('mdx-ts/language-server')
   } catch {
     // Dev fallback: extensionPath is <repo>/editors/vscode.
-    return path.join(context.extensionPath, '..', '..', 'dist', 'language-server.js')
+    return path.join(
+      context.extensionPath,
+      '..',
+      '..',
+      'packages',
+      'mdx-ts',
+      'dist',
+      'language-server.js',
+    )
   }
 }
 
