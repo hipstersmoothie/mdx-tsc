@@ -44,24 +44,29 @@ export function injectParseErrorDiagnostic(
 
   const fallback = embedded.snapshot.getText(0, embedded.snapshot.getLength());
   const header = "// @ts-check\n";
-  // The reason is quoted verbatim in TypeScript's TS2345 message, so label it
-  // to make the resulting diagnostic self-explanatory.
-  const message = JSON.stringify(`MDX parse error: ${reason}`);
-  const helper = `\nfunction __mdxSyntaxError(/** @type {never} */ _reason) {}\n__mdxSyntaxError(`;
 
-  const generatedStart = header.length + fallback.length + helper.length;
-  const text = `${header}${fallback}${helper}${message});\n`;
+  // Carry the reason in a *target* string-literal type: assigning `0` to it
+  // yields TS2322 "Type '0' is not assignable to type '<reason>'". Target types
+  // are printed verbatim across TypeScript versions, unlike a value passed to a
+  // `never` parameter (which older versions widen to `string`, dropping it).
+  // `{`/`}` would confuse the JSDoc `@type {...}` parser, so drop them.
+  const label = `MDX parse error: ${reason}`.replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
+  const typeAnnotation = `/** @type {${JSON.stringify(label)}} */\n`;
+  const declPrefix = `${typeAnnotation}const `;
+  const name = "__mdxSyntaxError";
 
-  // TypeScript flags the whole reason argument, so the mapping must cover its
-  // full generated length; the source side is clamped to what remains in the
-  // MDX. Volar allows differing generated/source lengths via `generatedLengths`.
-  const sourceLength = Math.max(1, Math.min(message.length, mdx.length - offset));
+  const generatedStart = header.length + fallback.length + 1 + declPrefix.length;
+  const text = `${header}${fallback}\n${declPrefix}${name} = 0\nvoid ${name}\n`;
+
+  // TS2322 is reported on the declaration name. Map that name onto the offending
+  // MDX span; source and generated lengths differ, so use `generatedLengths`.
+  const sourceLength = Math.max(1, Math.min(name.length, mdx.length - offset));
 
   const mapping: CodeMapping = {
     sourceOffsets: [offset],
     generatedOffsets: [generatedStart],
     lengths: [sourceLength],
-    generatedLengths: [message.length],
+    generatedLengths: [name.length],
     data: {
       completion: false,
       format: false,
